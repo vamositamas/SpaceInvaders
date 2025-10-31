@@ -130,6 +130,50 @@ function validateDifficulty(difficulty) {
 }
 
 /**
+ * Validates high score data
+ * @param {object} scoreData - High score data to validate
+ * @returns {boolean} True if valid
+ * @throws {Error} If validation fails
+ */
+function validateHighScore(scoreData) {
+  if (!scoreData || typeof scoreData !== 'object') {
+    throw new Error('High score data must be an object');
+  }
+
+  // Validate playerName
+  if (typeof scoreData.playerName !== 'string' || scoreData.playerName.length < 1 || scoreData.playerName.length > 20) {
+    throw new Error('Player name must be between 1 and 20 characters');
+  }
+
+  // Validate score
+  if (typeof scoreData.score !== 'number' || scoreData.score < 0) {
+    throw new Error('Score must be a non-negative number');
+  }
+
+  // Validate level
+  if (typeof scoreData.level !== 'number' || scoreData.level < 1 || !Number.isInteger(scoreData.level)) {
+    throw new Error('Level must be an integer >= 1');
+  }
+
+  // Validate date if present
+  if (scoreData.date) {
+    const date = new Date(scoreData.date);
+    if (isNaN(date.getTime())) {
+      throw new Error('Date must be a valid date string');
+    }
+  }
+
+  // Validate duration if present
+  if (scoreData.duration !== undefined) {
+    if (typeof scoreData.duration !== 'number' || scoreData.duration < 0) {
+      throw new Error('Duration must be a non-negative number');
+    }
+  }
+
+  return true;
+}
+
+/**
  * Validates complete configuration object
  * @param {object} config - Configuration object to validate
  * @param {boolean} requireComplete - Whether to require all sections (default: true)
@@ -178,4 +222,5 @@ module.exports = {
   validateDifficulty,
   validateDifficultyLevel,
   validateConfig,
+  validateHighScore,
 };

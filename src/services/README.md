@@ -4,6 +4,48 @@ This directory contains reusable business logic services for the Space Invaders 
 
 ## Available Services
 
+### HighScoreService
+
+A robust high score persistence service with validation and automatic sorting.
+
+**Location:** `highscore.service.js`
+
+**Features:**
+- ✅ Add/retrieve high scores
+- ✅ Comprehensive validation
+- ✅ Automatic ID and timestamp generation
+- ✅ 100-score limit with automatic pruning
+- ✅ Score qualification checking
+- ✅ 100% test coverage
+
+**Quick Start:**
+```javascript
+const HighScoreService = require('./highscore.service');
+const highScoreService = new HighScoreService();
+
+// Add a high score
+await highScoreService.addHighScore({
+  playerName: 'Alice',
+  score: 15000,
+  level: 10,
+  duration: 450
+});
+
+// Get top 10
+const topTen = await highScoreService.getTopScores(10);
+
+// Check if score qualifies
+const qualifies = await highScoreService.isHighScore(5000);
+```
+
+**Documentation:** See [HIGHSCORE_SERVICE.md](../../docs/HIGHSCORE_SERVICE.md)
+
+**Examples:** See `highscore.examples.js`
+
+**Tests:** `../../tests/unit/services/highscore.service.test.js` (17 tests, 100% coverage)
+
+---
+
 ### ConfigService
 
 A robust configuration management service for game settings with validation and persistence.
