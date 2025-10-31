@@ -1,0 +1,32 @@
+{
+  "canvas": {
+    "width": 800,
+    "height": 600
+  },
+  "player": {
+    "speed": 5,
+    "fireRate": 500,
+    "lives": 3
+  },
+  "enemies": {
+    "rows": 5,
+    "columns": 11,
+    "baseSpeed": 1,
+    "speedIncrement": 0.1,
+    "fireRate": 2000
+  },
+  "difficulty": {
+    "easy": {
+      "speedMultiplier": 0.75,
+      "fireRateMultiplier": 1.5
+    },
+    "normal": {
+      "speedMultiplier": 1.0,
+      "fireRateMultiplier": 1.0
+    },
+    "hard": {
+      "speedMultiplier": 1.5,
+      "fireRateMultiplier": 0.5
+    }
+  }
+}
