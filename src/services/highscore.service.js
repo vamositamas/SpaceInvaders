@@ -134,6 +134,35 @@ class HighScoreService {
   }
 
   /**
+   * Gets a specific high score by ID
+   * @param {string} id - Score ID to retrieve
+   * @returns {Promise<object|null>} Score object or null if not found
+   */
+  async getScoreById(id) {
+    const scores = await this._loadScores();
+    return scores.find((score) => score.id === id) || null;
+  }
+
+  /**
+   * Deletes a high score by ID
+   * @param {string} id - Score ID to delete
+   * @returns {Promise<boolean>} True if score was deleted, false if not found
+   */
+  async deleteScore(id) {
+    const scores = await this._loadScores();
+    const initialLength = scores.length;
+    const filteredScores = scores.filter((score) => score.id !== id);
+
+    // If length didn't change, score wasn't found
+    if (filteredScores.length === initialLength) {
+      return false;
+    }
+
+    await this._saveScores(filteredScores);
+    return true;
+  }
+
+  /**
    * Clears all high scores (for testing)
    * @returns {Promise<void>}
    */

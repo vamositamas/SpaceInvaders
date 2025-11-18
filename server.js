@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const configRoutes = require('./src/routes/config.routes');
+const highScoreRoutes = require('./src/routes/highscore.routes');
 const { handleJsonError, errorHandler, notFoundHandler } = require('./src/middleware/validation');
 
 const app = express();
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/config', configRoutes);
+app.use('/api/highscores', highScoreRoutes);
 
 // 404 handler for unknown routes
 app.use(notFoundHandler);

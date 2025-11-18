@@ -4,11 +4,11 @@ A comprehensive Node.js Express backend server with REST API, file-based storage
 
 ## Features
 
-- ✅ **RESTful API** - Full CRUD operations for game configuration
-- ✅ **High Score System** - Persistent high score tracking (top 100)
+- ✅ **RESTful API** - Full CRUD operations for game configuration and high scores
+- ✅ **High Score System** - Persistent high score tracking (top 100) with REST API
 - ✅ **Configuration Management** - Dynamic game settings with validation
 - ✅ **File-Based Storage** - JSON file persistence for data
-- ✅ **Comprehensive Testing** - 59 tests with excellent coverage
+- ✅ **Comprehensive Testing** - 77 tests with excellent coverage
 - ✅ **Error Handling** - Robust validation and error responses
 - ✅ **CORS Enabled** - Ready for frontend integration
 
@@ -18,13 +18,15 @@ A comprehensive Node.js Express backend server with REST API, file-based storage
 ├── server.js                    # Main Express server
 ├── src/
 │   ├── controllers/             # Route controllers
-│   │   └── config.controller.js
+│   │   ├── config.controller.js
+│   │   └── highscore.controller.js
 │   ├── services/                # Business logic
 │   │   ├── file-storage.service.js
 │   │   ├── config.service.js
 │   │   └── highscore.service.js
 │   ├── routes/                  # API routes
-│   │   └── config.routes.js
+│   │   ├── config.routes.js
+│   │   └── highscore.routes.js
 │   ├── middleware/              # Custom middleware
 │   │   └── validation.js
 │   ├── models/                  # Data models & validation
@@ -39,16 +41,19 @@ A comprehensive Node.js Express backend server with REST API, file-based storage
 │       ├── default-config.json
 │       └── game-config.json
 ├── tests/
-│   ├── unit/                    # Unit tests (48 tests)
+│   ├── unit/                    # Unit tests (47 tests)
 │   │   └── services/
-│   └── integration/             # Integration tests (12 tests)
+│   └── integration/             # Integration tests (30 tests)
 │       ├── server.test.js
-│       └── config.routes.test.js
+│       ├── config.routes.test.js
+│       └── highscore.routes.test.js
 ├── docs/                        # Documentation
 │   ├── CONFIG_API.md
 │   ├── CONFIG_SERVICE.md
 │   ├── FILE_STORAGE_SERVICE.md
-│   └── HIGHSCORE_SERVICE.md
+│   ├── HIGHSCORE_SERVICE.md
+│   ├── HIGHSCORE_API.md
+│   └── TEST_RESULTS.md
 ├── .env                         # Environment variables
 ├── .eslintrc.json              # ESLint configuration
 ├── .prettierrc                 # Prettier configuration
@@ -103,6 +108,14 @@ A comprehensive Node.js Express backend server with REST API, file-based storage
 
 See [CONFIG_API.md](docs/CONFIG_API.md) for complete API documentation.
 
+### High Score Management
+- **GET** `/api/highscores?limit=10` - Get top scores with optional limit
+- **POST** `/api/highscores` - Submit a new high score
+- **GET** `/api/highscores/:id` - Get specific score by ID
+- **DELETE** `/api/highscores/:id` - Delete a score
+
+See [HIGHSCORE_API.md](docs/HIGHSCORE_API.md) for complete API documentation.
+
 ## Services
 
 ### FileStorageService
@@ -153,16 +166,19 @@ npm test -- --coverage
 
 **Test Results:**
 ```
-Test Suites: 5 passed, 5 total
-Tests:       59 passed, 59 total
+Test Suites: 6 passed, 6 total
+Tests:       77 passed, 77 total
 
 Coverage Summary:
-- Services: 98.24% coverage
+- Services: 98%+ coverage
 - Overall: 88%+ coverage
 ```
 
 ### Test Structure
-- **Integration Tests** (12 tests) - API endpoints, server health
+- **Integration Tests** (30 tests) - API endpoints, server health
+  - Server health: 1 test
+  - Config API: 11 tests
+  - High Score API: 18 tests
 - **Unit Tests** (47 tests) - Service layer logic
   - FileStorageService: 14 tests
   - ConfigService: 16 tests
