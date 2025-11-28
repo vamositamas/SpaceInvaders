@@ -1,0 +1,59 @@
+.hud-container {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 16px;
+}
+
+.hud-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  mat-icon {
+    color: #64B5F6;
+  }
+}
+
+.hud-label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.hud-value {
+  font-weight: 700;
+  font-size: 18px;
+  color: #64B5F6;
+}
+
+.hud-status {
+  flex: 1;
+  text-align: center;
+}
+
+.status-text {
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  
+  &.paused {
+    color: #FFA726;
+    animation: blink 1s infinite;
+  }
+  
+  &.game-over {
+    color: #EF5350;
+  }
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.3; }
+}

@@ -1,0 +1,30 @@
+.game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.game-card {
+  max-width: 900px;
+  width: 100%;
+}
+
+.game-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    padding: 8px;
+  }
+  
+  .game-content {
+    padding: 8px;
+  }
+}

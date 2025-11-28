@@ -1,0 +1,29 @@
+<mat-card class="hud-container">
+  <mat-card-content class="hud-content">
+    <div class="hud-item">
+      <mat-icon>star</mat-icon>
+      <span class="hud-label">Score:</span>
+      <span class="hud-value">{{ gameState.score }}</span>
+    </div>
+    
+    <div class="hud-item">
+      <mat-icon>favorite</mat-icon>
+      <span class="hud-label">Lives:</span>
+      <span class="hud-value">{{ gameState.lives }}</span>
+    </div>
+    
+    <div class="hud-item">
+      <mat-icon>trending_up</mat-icon>
+      <span class="hud-label">Level:</span>
+      <span class="hud-value">{{ gameState.level }}</span>
+    </div>
+    
+    <div class="hud-status" *ngIf="gameState.isPaused">
+      <span class="status-text paused">PAUSED</span>
+    </div>
+    
+    <div class="hud-status" *ngIf="gameState.isGameOver">
+      <span class="status-text game-over">GAME OVER</span>
+    </div>
+  </mat-card-content>
+</mat-card>
