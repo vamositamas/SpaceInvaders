@@ -1,6 +1,6 @@
 # Space Invaders — Implementation Status
 **Last Updated:** February 20, 2026  
-**Test Suite:** 567 / 567 passing (frontend) · 163 / 163 passing (backend)
+**Test Suite:** 602 / 602 passing (frontend) · 188 / 188 passing (backend)
 
 ---
 
@@ -78,8 +78,8 @@
 | P43 | Settings Persistence | ✅ | Backend `SettingsService`, controller, routes wired; `ApiService` + `SettingsService` sync with backend on load/save |
 | P44 | Backend Score Validation | ✅ | `ValidationService` — `checkScoreRealistic`, `checkDurationRealistic`, `sanitizePlayerName`; controller sanitises input + anti-cheat; rate limiter (20/h per IP) on POST |
 | P45 | Game Session Tracking | ✅ | `SessionService` — create/update/end sessions, `getSessionStats()`, max 100 sessions kept, persisted to `data/logs/game-sessions.json` |
-| P46 | WebSocket Real-Time Updates | ❌ | Not started |
-| P47 | Error Handling & Retry Logic | ❌ | Not started |
+| P46 | WebSocket Real-Time Updates | ✅ | `GameRoom` (backend) + `WebSocketService` (Angular) with `SOCKET_FACTORY_TOKEN`; Socket.io real-time leaderboard broadcasting |
+| P47 | Error Handling & Retry Logic | ✅ | `ErrorHandlerService` — status-code → friendly message, `MatSnackBar`, dev-only `console.error`; backend `errorHandler` adds `statusCode` + dev stack traces |
 
 ---
 
@@ -145,9 +145,7 @@
 
 ## Next Up — Recommended work order
 
-1. **P46** — WebSocket real-time leaderboard updates
-5. **P47** — Error handling & retry logic (RxJS `retryWhen`)
-6. **P48** — Performance optimisation (object pooling for projectiles)
+1. **P48** — Performance optimisation (object pooling for projectiles)
 7. **P49** — Visual polish (explosion sprites, star-field background)
 8. **P50** — Sound effects (Web Audio API)
 9. **P53** — Accessibility audit (ARIA, keyboard-only gameplay)
@@ -163,4 +161,4 @@
 | Game Engine | PlayerService, ProjectileService, CollisionService, EnemyService, EnemyMovementService, EnemyShootingService, LevelService, ShieldService, ScoreService, MysteryShipService | ~200 |
 | State & Config | GameStateService, ConfigService, SettingsService, HighScoreService, ApiService | ~150 |
 | UI Components | GameBoardComponent, HudComponent, GameContainerComponent, PauseOverlayComponent, MainMenuComponent, SettingsDialogComponent, HighScoresComponent, InstructionsDialogComponent, GameOverComponent | ~200 |
-| **Total** | | **567 / 567 ✅** |
+| **Total** | | **602 / 602 ✅** |

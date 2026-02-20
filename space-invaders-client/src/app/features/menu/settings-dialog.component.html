@@ -116,8 +116,10 @@
         (click)="onSave()"
         [disabled]="settingsForm.invalid || isSaving">
         @if (isSaving) {
-          <mat-icon>hourglass_top</mat-icon>
-          Saving...
+          <ng-container>
+            <mat-icon>hourglass_top</mat-icon>
+            Saving...
+          </ng-container>
         } @else {
           Save
         }

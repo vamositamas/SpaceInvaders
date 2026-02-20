@@ -25,6 +25,7 @@ export class GameStateService {
   private isPausedSubject = new BehaviorSubject<boolean>(this.INITIAL_IS_PAUSED);
   private isGameOverSubject = new BehaviorSubject<boolean>(this.INITIAL_IS_GAME_OVER);
   private isPlayingSubject = new BehaviorSubject<boolean>(this.INITIAL_IS_PLAYING);
+  private rapidFireSubject = new BehaviorSubject<boolean>(false);
 
   // Individual observables
   public readonly score$: Observable<number> = this.scoreSubject.asObservable();
@@ -32,6 +33,7 @@ export class GameStateService {
   public readonly level$: Observable<number> = this.levelSubject.asObservable();
   public readonly isPaused$: Observable<boolean> = this.isPausedSubject.asObservable();
   public readonly isGameOver$: Observable<boolean> = this.isGameOverSubject.asObservable();
+  public readonly rapidFire$: Observable<boolean> = this.rapidFireSubject.asObservable();
 
   // Combined game state observable
   public readonly gameState$: Observable<LegacyGameState> = combineLatest([
@@ -122,6 +124,21 @@ export class GameStateService {
     this.isPausedSubject.next(this.INITIAL_IS_PAUSED);
     this.isGameOverSubject.next(this.INITIAL_IS_GAME_OVER);
     this.isPlayingSubject.next(this.INITIAL_IS_PLAYING);
+    this.rapidFireSubject.next(false);
+  }
+
+  /**
+   * Toggle rapid fire mode on/off
+   */
+  toggleRapidFire(): void {
+    this.rapidFireSubject.next(!this.rapidFireSubject.value);
+  }
+
+  /**
+   * Returns whether rapid fire is currently enabled
+   */
+  isRapidFireEnabled(): boolean {
+    return this.rapidFireSubject.value;
   }
 
   /**

@@ -19,6 +19,9 @@ import { Subject, takeUntil } from 'rxjs';
 /** Total number of enemies in the grid (5 rows × 11 columns). */
 const TOTAL_ENEMIES = 55;
 
+/** Rapid fire reduces the cooldown to 1/4 of the normal rate. */
+const RAPID_FIRE_MULTIPLIER = 0.25;
+
 /**
  * GameBoardComponent
  *
@@ -165,7 +168,10 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Player fire input: space key or left mouse click
     const firePressed = this.inputHandlerService.isKeyPressed(' ')
       || this.inputHandlerService.isMouseButtonPressed(0);
-    if (firePressed && this.playerService.canFire(currentTime, this.config.player.fireRate)) {
+    const effectiveFireRate = this.gameStateService.isRapidFireEnabled()
+      ? this.config.player.fireRate * RAPID_FIRE_MULTIPLIER
+      : this.config.player.fireRate;
+    if (firePressed && this.playerService.canFire(currentTime, effectiveFireRate)) {
       const px = player.x + player.width / 2 - ProjectileService.PROJECTILE_WIDTH / 2;
       const py = player.y;
       this.projectileService.addPlayerProjectile(px, py);

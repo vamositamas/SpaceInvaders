@@ -17,6 +17,17 @@
       <span class="hud-label">Level:</span>
       <span class="hud-value">{{ gameState.level }}</span>
     </div>
+
+    <button
+      mat-stroked-button
+      class="rapid-fire-btn"
+      [class.rapid-fire-active]="rapidFireEnabled()"
+      (click)="toggleRapidFire()"
+      matTooltip="Toggle rapid fire mode (4× fire rate)"
+      aria-label="Toggle rapid fire">
+      <mat-icon>bolt</mat-icon>
+      RAPID FIRE
+    </button>
     
     <div class="hud-status" *ngIf="gameState.isPaused">
       <span class="status-text paused">PAUSED</span>

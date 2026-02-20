@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, skip } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { SettingsDialogComponent } from './settings-dialog.component';
 import { InstructionsDialogComponent } from './instructions-dialog.component';
@@ -28,9 +28,9 @@ import { InstructionsDialogComponent } from './instructions-dialog.component';
   styleUrl: './main-menu.component.scss'
 })
 export class MainMenuComponent implements OnInit, OnDestroy {
-  isLoading = false;
-  hasError = false;
-  errorMessage = '';
+  readonly isLoading = signal(false);
+  readonly hasError = signal(false);
+  readonly errorMessage = signal('');
 
   private destroy$ = new Subject<void>();
 
@@ -53,21 +53,23 @@ export class MainMenuComponent implements OnInit, OnDestroy {
    * Load game configuration
    */
   loadConfiguration(): void {
-    this.isLoading = true;
-    this.hasError = false;
+    this.isLoading.set(true);
+    this.hasError.set(false);
 
     this.configService.config$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(skip(1), takeUntil(this.destroy$))
       .subscribe({
         next: (config) => {
-          if (config) {
-            this.isLoading = false;
+          this.isLoading.set(false);
+          if (!config) {
+            this.hasError.set(true);
+            this.errorMessage.set('Failed to load configuration. Please check the backend connection and retry.');
           }
         },
         error: (error) => {
-          this.isLoading = false;
-          this.hasError = true;
-          this.errorMessage = 'Failed to load configuration. Please refresh the page.';
+          this.isLoading.set(false);
+          this.hasError.set(true);
+          this.errorMessage.set('Failed to load configuration. Please refresh the page.');
           console.error('Configuration load error:', error);
         }
       });

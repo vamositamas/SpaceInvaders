@@ -3,7 +3,7 @@ import { EnemyEntity } from './enemy.service';
 
 const DESCENT_STEP = 20;           // pixels dropped each direction reversal
 const BASE_SPEED_PX_PER_SEC = 60;  // base speed (matches config baseSpeed=1 × 60)
-const SPEED_INCREMENT = 6;         // extra px/s per destroyed enemy per column
+const SPEED_INCREMENT = 2;         // extra px/s per destroyed enemy (reduced for playability)
 
 /**
  * EnemyMovementService - Moves the enemy formation as a group

@@ -19,7 +19,7 @@ export interface EnemyEntity {
 
 const ENEMY_WIDTH = 30;
 const ENEMY_HEIGHT = 20;
-const H_SPACING = 45;   // horizontal centre-to-centre spacing
+const H_SPACING = 50;   // horizontal centre-to-centre spacing
 const V_SPACING = 35;   // vertical centre-to-centre spacing
 const GRID_TOP_Y = 60;  // y position of the first row
 
