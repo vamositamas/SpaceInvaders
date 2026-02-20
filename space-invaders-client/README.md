@@ -1,6 +1,59 @@
-# SpaceInvadersClient
+# Space Invaders — Angular Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.10.
+Angular 20 frontend for the Space Invaders game. Renders the game on an HTML5 Canvas and communicates with the Express backend via REST API.
+
+## Requirements
+
+- Node.js 20+
+- Backend server running on port 3000 (see root `README.md`)
+
+## Quick Start
+
+```bash
+npm install
+npm start
+```
+
+Open **http://localhost:4200**
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm start` | Dev server with hot-reload (port 4200) |
+| `npm run build` | Production build → `dist/` |
+| `npm test` | Unit tests via Karma/Jasmine |
+| `npm run test:coverage` | Tests with coverage report |
+| `npm run lint` | ESLint |
+
+## Architecture
+
+- **Standalone components** with Angular Material UI
+- **Zoneless change detection** — state managed with `signal()` and RxJS
+- **SSR enabled** via Angular Universal
+- **Proxy** — `/api` requests forwarded to `http://localhost:3000` (see `proxy.conf.json`)
+
+## Key Directories
+
+```
+src/app/
+├── core/
+│   ├── models/        # TypeScript interfaces (GameConfig, HighScore, etc.)
+│   └── services/      # All game logic and API services
+└── features/
+    ├── menu/          # Main menu, settings dialog, instructions, high scores
+    ├── game/          # Game canvas, HUD, pause overlay, game board
+    └── game-over/     # Game over screen with score submission
+```
+
+## Testing
+
+188 tests across 20 service specs. Run with:
+
+```bash
+npm test
+```
+
 
 ## Development server
 

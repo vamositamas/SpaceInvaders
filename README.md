@@ -1,6 +1,260 @@
-# Space Invaders Backend Server
+# Space Invaders
 
-A comprehensive Node.js Express backend server with REST API, file-based storage, and configuration management for the Space Invaders game.
+A full-stack implementation of the classic Space Invaders arcade game — Angular 20 frontend with an HTML5 Canvas game engine, backed by a Node.js/Express REST API.
+
+---
+
+## Overview
+
+| Layer | Technology | Port |
+|---|---|---|
+| Frontend | Angular 20 (zoneless, SSR) | 4200 |
+| Backend | Node.js + Express | 3000 |
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js 20+
+- npm 10+
+
+### 1. Install dependencies
+
+```bash
+# Backend
+npm install
+
+# Frontend
+cd space-invaders-client && npm install
+```
+
+### 2. Start both servers
+
+```bash
+# From the workspace root — starts backend (port 3000) + frontend (port 4200)
+# Use the VS Code task: "Start All Servers"
+# Or manually:
+
+# Terminal 1 – Backend
+npm run dev
+
+# Terminal 2 – Frontend
+cd space-invaders-client && npm start
+```
+
+### 3. Open the game
+
+Navigate to **http://localhost:4200**
+
+---
+
+## Gameplay
+
+- **Move:** Arrow keys / A & D / Mouse
+- **Shoot:** Spacebar / Left mouse button
+- **Pause:** P key
+- **Rapid Fire:** Toggle the ⚡ RAPID FIRE button in the HUD (4× fire rate)
+
+---
+
+## Project Structure
+
+```
+├── server.js                        # Express entry point
+├── src/                             # Backend source
+│   ├── controllers/                 # Route controllers
+│   ├── services/                    # Business logic (config, highscore, file storage)
+│   ├── routes/                      # API route definitions
+│   ├── middleware/                  # Validation middleware
+│   ├── models/                      # Data schemas
+│   └── websocket/                   # Socket.io handlers (reserved)
+├── data/
+│   ├── config/
+│   │   ├── game-config.json         # Active game configuration
+│   │   └── default-config.json      # Default/reset values
+│   ├── highscores/
+│   │   └── highscores.json          # Persisted high scores
+│   └── settings/
+│       └── settings.json            # Player settings
+├── tests/
+│   ├── unit/                        # Jest unit tests (backend)
+│   └── integration/                 # Supertest integration tests
+├── space-invaders-client/           # Angular frontend
+│   └── src/app/
+│       ├── core/
+│       │   ├── models/              # TypeScript interfaces
+│       │   └── services/            # All game + API services
+│       └── features/
+│           ├── menu/                # Main menu, settings, high scores
+│           ├── game/                # Game canvas, HUD, pause overlay
+│           └── game-over/           # Game over screen
+└── docs/                            # Documentation
+    ├── ai documents/                # AI-generated implementation summaries
+    └── prompts/                     # Development phase prompts
+```
+
+---
+
+## Frontend Architecture
+
+Built with Angular 20 using **zoneless change detection** — all reactive state uses Angular `signal()`s or RxJS.
+
+### Services (core/services)
+
+| Service | Responsibility |
+|---|---|
+| `GameStateService` | Score, lives, level, pause, game-over, rapid fire state |
+| `PlayerService` | Player position, movement, invincibility, fire-rate cooldown |
+| `EnemyService` | Enemy grid initialisation and queries |
+| `EnemyMovementService` | Formation movement, edge bouncing, speed scaling |
+| `EnemyShootingService` | Random enemy fire with configurable rate |
+| `ProjectileService` | Player & enemy projectile pools |
+| `CollisionService` | AABB collision detection |
+| `ShieldService` | Shield entity management and damage |
+| `MysteryShipService` | Mystery ship spawning and scoring |
+| `ScoreService` | Score calculation and combo tracking |
+| `LevelService` | Level progression and per-level config |
+| `CanvasService` | Canvas init and draw context |
+| `InputHandlerService` | Keyboard and mouse input |
+| `ConfigService` | Reactive game config (from backend API) |
+| `SettingsService` | Player settings (from backend API) |
+| `HighscoreService` | High score fetching and submission |
+| `ApiService` | HTTP client for all backend endpoints |
+| `WebsocketService` | Socket.io client (reserved) |
+
+### Game Features
+
+- **Frame-independent movement** — all logic uses `deltaTime`
+- **Rapid Fire toggle** — HUD button, 4× fire rate, yellow glow animation
+- **Invincibility frames** — 2s after taking damage
+- **Speed scaling** — enemies accelerate as they are destroyed (2 px/s per kill)
+- **Level progression** — new grid + shields on each level complete
+- **Mystery ship** — bonus points, random spawn interval
+- **Pause / resume** — P key or pause overlay button
+
+---
+
+## Backend API
+
+```
+GET  /health                    Server health check
+GET  /api/config                Get active game configuration
+PUT  /api/config                Update configuration
+POST /api/config/reset          Reset to defaults
+GET  /api/highscores?limit=10   Get top scores
+POST /api/highscores            Submit a new high score
+GET  /api/highscores/:id        Get score by ID
+DELETE /api/highscores/:id      Delete a score
+GET  /api/settings              Get player settings
+PUT  /api/settings              Save player settings
+POST /api/settings/reset        Reset settings to defaults
+```
+
+---
+
+## Game Configuration
+
+Stored in `data/config/game-config.json`:
+
+```json
+{
+  "canvas": { "width": 800, "height": 650 },
+  "player": { "speed": 5, "fireRate": 500, "lives": 3 },
+  "enemies": {
+    "rows": 5, "columns": 11,
+    "baseSpeed": 1, "speedIncrement": 0.1, "fireRate": 2000
+  },
+  "difficulty": {
+    "easy":   { "speedMultiplier": 0.75, "fireRateMultiplier": 1.5 },
+    "normal": { "speedMultiplier": 1.0,  "fireRateMultiplier": 1.0 },
+    "hard":   { "speedMultiplier": 1.5,  "fireRateMultiplier": 0.5 }
+  }
+}
+```
+
+---
+
+## Testing
+
+### Backend (Jest + Supertest)
+
+```bash
+npm test
+npm test -- --coverage
+```
+
+**Results:** 77 tests passing across 6 suites
+- Integration: Config API (11), High Score API (18), Server (1)
+- Unit: FileStorageService (14), ConfigService (16), HighScoreService (17)
+
+### Frontend (Karma + Jasmine)
+
+```bash
+cd space-invaders-client
+npm test
+npm run test:coverage
+```
+
+**Results:** 188 tests passing — 20 services fully covered
+
+---
+
+## Available Scripts
+
+### Backend
+| Script | Description |
+|---|---|
+| `npm start` | Production server |
+| `npm run dev` | Dev server with nodemon auto-reload |
+| `npm test` | Run Jest test suite |
+
+### Frontend
+| Script | Description |
+|---|---|
+| `npm start` | Angular dev server (port 4200) |
+| `npm run build` | Production build |
+| `npm test` | Karma unit tests |
+| `npm run lint` | ESLint |
+
+### VS Code Tasks
+- **Start All Servers** — starts backend + frontend in parallel
+- **Stop All Servers** — kills both servers
+- **Restart Backend / Frontend**
+
+---
+
+## Tech Stack
+
+**Frontend:**
+- Angular 20 (standalone components, zoneless, SSR)
+- Angular Material
+- RxJS
+- TypeScript (strict mode)
+- HTML5 Canvas
+
+**Backend:**
+- Node.js + Express 4
+- Jest + Supertest
+- Nodemon
+- dotenv, Helmet, express-rate-limit
+
+---
+
+## Environment
+
+Backend `.env`:
+```env
+NODE_ENV=development
+PORT=3000
+ALLOWED_ORIGINS=http://localhost:4200
+```
+
+---
+
+## License
+
+ISC
 
 ## Features
 
