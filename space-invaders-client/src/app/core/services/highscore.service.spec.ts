@@ -64,9 +64,7 @@ describe('HighScoreService', () => {
   it('should update highScores$ observable after loadHighScores', (done) => {
     apiServiceSpy.getHighScores.and.returnValue(of(mockScores));
     
-    service.loadHighScores();
-    
-    // Skip initial empty array emission
+    // Subscribe first so we capture the transition from [] to mockScores
     let emissionCount = 0;
     service.highScores$.subscribe((scores: HighScore[]) => {
       emissionCount++;
@@ -75,6 +73,8 @@ describe('HighScoreService', () => {
         done();
       }
     });
+    
+    service.loadHighScores();
   });
 
   it('should call ApiService.addHighScore with correct data', (done) => {
@@ -85,6 +85,8 @@ describe('HighScoreService', () => {
     };
     const savedScore: HighScore = { ...newScore, id: '4' };
     apiServiceSpy.addHighScore.and.returnValue(of(savedScore));
+    // addHighScore internally calls loadHighScores() after success, so getHighScores must be mocked
+    apiServiceSpy.getHighScores.and.returnValue(of([]));
     
     service.addHighScore(newScore).subscribe((result: HighScore) => {
       expect(apiServiceSpy.addHighScore).toHaveBeenCalledWith(newScore);

@@ -1,0 +1,92 @@
+<div class="high-scores-container responsive">
+  <!-- Header -->
+  <div class="header">
+    <h1>High Scores</h1>
+    <button 
+      mat-icon-button 
+      (click)="loadHighScores()"
+      [disabled]="isLoading"
+      aria-label="Refresh high scores">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading high scores...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-message" *ngIf="errorMessage && !isLoading">
+    <mat-icon>error</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadHighScores()">
+      Retry
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="highScores.length === 0 && !isLoading && !errorMessage">
+    <mat-icon>emoji_events</mat-icon>
+    <h2>No high scores yet</h2>
+    <p>Be the first to set a high score!</p>
+  </div>
+
+  <!-- High Scores Table -->
+  <div class="table-container" *ngIf="highScores.length > 0 && !isLoading">
+    <table mat-table [dataSource]="dataSource" matSort class="high-scores-table">
+      
+      <!-- Rank Column -->
+      <ng-container matColumnDef="rank">
+        <th mat-header-cell *matHeaderCellDef>Rank</th>
+        <td mat-cell *matCellDef="let score; let i = index" class="rank-cell">
+          {{ getRank(i) }}
+        </td>
+      </ng-container>
+
+      <!-- Player Name Column -->
+      <ng-container matColumnDef="playerName">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Player</th>
+        <td mat-cell *matCellDef="let score" class="player-cell">
+          {{ score.playerName }}
+        </td>
+      </ng-container>
+
+      <!-- Score Column -->
+      <ng-container matColumnDef="score">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Score</th>
+        <td mat-cell *matCellDef="let score" class="score-cell">
+          {{ formatScore(score.score) }}
+        </td>
+      </ng-container>
+
+      <!-- Level Column -->
+      <ng-container matColumnDef="level">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Level</th>
+        <td mat-cell *matCellDef="let score" class="level-cell">
+          {{ score.level }}
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+        <td mat-cell *matCellDef="let score" class="date-cell">
+          {{ formatDate(score.date) }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Paginator -->
+    <mat-paginator 
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      [pageSize]="10"
+      showFirstLastButtons
+      aria-label="Select page of high scores">
+    </mat-paginator>
+  </div>
+</div>

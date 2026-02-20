@@ -1,0 +1,161 @@
+.settings-dialog {
+  min-width: 400px;
+  max-width: 600px;
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--primary-color, #2196f3);
+  }
+}
+
+mat-dialog-content {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary, #ffffff);
+  }
+}
+
+.settings-checkbox {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.volume-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+  }
+
+  .volume-slider {
+    width: 100%;
+  }
+
+  .volume-value {
+    align-self: flex-end;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-color, #2196f3);
+  }
+}
+
+.difficulty-group,
+.control-scheme-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.difficulty-option,
+.control-option {
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.5);
+  border-radius: 4px;
+  color: #f44336;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  span {
+    flex: 1;
+    font-size: 14px;
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .reset-button {
+    color: var(--warn-color, #f44336);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+  }
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .settings-dialog {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  mat-dialog-content {
+    padding: 16px;
+  }
+
+  mat-dialog-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+
+    .action-buttons {
+      width: 100%;
+      
+      button {
+        flex: 1;
+      }
+    }
+
+    .reset-button {
+      width: 100%;
+    }
+  }
+}
+
+// Dark theme adjustments
+@media (prefers-color-scheme: dark) {
+  .settings-section {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}

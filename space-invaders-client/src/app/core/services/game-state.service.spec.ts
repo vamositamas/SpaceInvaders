@@ -154,18 +154,17 @@ describe('GameStateService', () => {
   });
 
   it('should set isPaused to false when resume is called', (done) => {
-    service.pause();
-    service.resume();
-    
     let emissionCount = 0;
     service.isPaused$.subscribe((isPaused: boolean) => {
       emissionCount++;
-      // Skip initial false and paused true, check resumed false
+      // Emissions: 1=initial false, 2=paused true, 3=resumed false
       if (emissionCount === 3) {
         expect(isPaused).toBe(false);
         done();
       }
     });
+    service.pause();
+    service.resume();
   });
 
   it('should set isGameOver to true when gameOver is called', (done) => {

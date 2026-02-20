@@ -1,0 +1,456 @@
+/**
+ * Game Over Component Styles
+ */
+
+.game-over-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.game-over-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: white;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Title
+.game-over-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 40px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 30px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #e74c3c;
+  }
+}
+
+// High Score Message
+.high-score-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 18px;
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+  animation: pulse 0.6s ease-in-out;
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 20px;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// Score Display
+.score-section {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.score-label {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.final-score {
+  font-size: 48px;
+  font-weight: 700;
+  color: #2980b9;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+// Level Display
+.level-section {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.level-label {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.level-reached {
+  font-size: 48px;
+  font-weight: 700;
+  color: #27ae60;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+// Submission Form
+.submission-form {
+  margin-bottom: 30px;
+  padding: 20px 0;
+  border-top: 2px solid #ecf0f1;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+// Error Message
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #faddd1;
+  color: #c0392b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  border-left: 4px solid #c0392b;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Submit Button
+.submit-btn {
+  width: 100%;
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+// Button Group
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+
+  button {
+    flex: 1;
+    min-height: 44px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.play-again-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.main-menu-btn {
+  border-color: #667eea;
+  color: #667eea;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(102, 126, 234, 0.1);
+  }
+}
+
+// Mat Spinner
+mat-spinner {
+  display: inline-block !important;
+}
+
+// Material Form Field Overrides
+::ng-deep {
+  .game-over-container {
+    .mat-mdc-form-field {
+      width: 100%;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      padding-bottom: 0 !important;
+    }
+
+    .mat-mdc-form-field-hint-wrapper {
+      padding: 0 !important;
+    }
+
+    .mat-mdc-form-field-error-wrapper {
+      padding: 8px 0 0 !important;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .game-over-card {
+    padding: 30px 20px;
+  }
+
+  .game-over-title {
+    font-size: 32px;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .final-score,
+  .level-reached {
+    font-size: 40px;
+  }
+
+  .score-section,
+  .level-section {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .button-group {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .high-score-message {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-over-container {
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .game-over-card {
+    padding: 24px 16px;
+    max-width: 100%;
+  }
+
+  .game-over-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .final-score,
+  .level-reached {
+    font-size: 32px;
+  }
+
+  .score-label,
+  .level-label {
+    font-size: 12px;
+  }
+
+  .score-section,
+  .level-section {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+
+  .submission-form {
+    padding: 16px 0;
+  }
+
+  .error-message {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .submit-btn,
+  .button-group button {
+    min-height: 40px;
+    font-size: 15px;
+  }
+
+  .high-score-message {
+    font-size: 14px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    gap: 8px;
+
+    p {
+      font-size: 16px;
+    }
+  }
+}
+
+// Light/Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .game-over-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+
+  .game-over-card {
+    background: #0f3460;
+    color: #eaeaea;
+  }
+
+  .game-over-title {
+    color: #e0e0e0;
+  }
+
+  .score-section,
+  .level-section {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .score-label,
+  .level-label {
+    color: #b0b0b0;
+  }
+
+  .final-score {
+    color: #64b5f6;
+  }
+
+  .level-reached {
+    color: #81c784;
+  }
+}
+
+// Print Styles
+@media print {
+  .game-over-container {
+    background: white;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .game-over-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .button-group,
+  .submission-form {
+    display: none;
+  }
+
+  .game-over-title {
+    page-break-after: avoid;
+  }
+}

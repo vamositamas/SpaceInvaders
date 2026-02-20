@@ -1,0 +1,104 @@
+<div class="game-over-container">
+  <mat-card class="game-over-card">
+    <!-- Title -->
+    <h1 class="game-over-title">
+      <mat-icon>game_over</mat-icon>
+      Game Over
+    </h1>
+
+    <!-- High Score Message -->
+    @if (isHighScore) {
+      <div class="high-score-message">
+        <mat-icon>star</mat-icon>
+        <p>🎉 New High Score! 🎉</p>
+      </div>
+    }
+
+    <!-- Final Score Display -->
+    <div class="score-section">
+      <div class="score-label">Final Score</div>
+      <div class="final-score">{{ finalScore | number }}</div>
+    </div>
+
+    <!-- Level Display -->
+    <div class="level-section">
+      <div class="level-label">Waves Survived</div>
+      <div class="level-reached">{{ levelReached }}</div>
+    </div>
+
+    <!-- High Score Submission Form -->
+    @if (isHighScore) {
+      <form [formGroup]="form" class="submission-form">
+        <mat-form-field class="full-width" appearance="outline">
+          <mat-label>Player Name</mat-label>
+          <input
+            matInput
+            formControlName="playerName"
+            placeholder="Enter your name (1-20 characters)"
+            [disabled]="isSubmitting"
+            maxlength="20"
+          />
+          @if (form.get('playerName')?.hasError('required')) {
+            <mat-error>Name is required</mat-error>
+          }
+          @if (form.get('playerName')?.hasError('maxlength')) {
+            <mat-error>Name must be 20 characters or less</mat-error>
+          }
+          @if (form.get('playerName')?.hasError('pattern')) {
+            <mat-error>Only letters, numbers, and spaces are allowed</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Error Message -->
+        @if (submissionError) {
+          <div class="error-message">
+            <mat-icon>error</mat-icon>
+            <span>{{ submissionError }}</span>
+          </div>
+        }
+
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          class="submit-btn"
+          (click)="submitHighScore()"
+          [disabled]="form.invalid || isSubmitting"
+        >
+          @if (!isSubmitting) {
+            <mat-icon>check_circle</mat-icon>
+          }
+          @if (isSubmitting) {
+            <mat-spinner diameter="20"></mat-spinner>
+          }
+          {{ isSubmitting ? 'Submitting...' : 'Submit Score' }}
+        </button>
+      </form>
+    }
+
+    <!-- Action Buttons -->
+    <div class="button-group">
+      <button
+        mat-raised-button
+        color="primary"
+        class="play-again-btn"
+        (click)="playAgain()"
+        aria-label="Play another game"
+      >
+        <mat-icon>replay</mat-icon>
+        Play Again
+      </button>
+      <button
+        mat-stroked-button
+        color="primary"
+        class="main-menu-btn"
+        (click)="returnToMenu()"
+        aria-label="Return to main menu"
+      >
+        <mat-icon>home</mat-icon>
+        Main Menu
+      </button>
+    </div>
+  </mat-card>
+</div>
+

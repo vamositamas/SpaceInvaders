@@ -1,0 +1,714 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { GameCanvasComponent } from './game-canvas.component';
+import { CanvasService } from '../../../core/services/canvas.service';
+import { GameLoopService } from '../../../core/services/game-loop.service';
+import { InputHandlerService } from '../../../core/services/input-handler.service';
+import { PlayerService } from '../../../core/services/player.service';
+import { ProjectileService } from '../../../core/services/projectile.service';
+import { CollisionService } from '../../../core/services/collision.service';
+import { ShieldService } from '../../../core/services/shield.service';
+import { LivesService } from '../../../core/services/lives.service';
+import { EnemyService } from '../../../core/services/enemy.service';
+import { EnemyMovementService } from '../../../core/services/enemy-movement.service';
+import { EnemyShootingService } from '../../../core/services/enemy-shooting.service';
+import { LevelService } from '../../../core/services/level.service';
+import { GameStateService } from '../../../core/services/game-state.service';
+import { Player } from '../../../core/models/player.model';
+import { Enemy } from '../../../core/models/enemy.model';
+
+/**
+ * P33 - Enemy Player Collision (Game Over Condition) Tests
+ * 
+ * Tests for game over conditions when:
+ * 1. Enemy collides directly with player
+ * 2. Enemy reaches bottom threshold (player Y level)
+ * 
+ * Following TDD approach - tests written first, then implementation
+ */
+describe('GameCanvasComponent - P33 Game Over Conditions', () => {
+  let component: GameCanvasComponent;
+  let fixture: ComponentFixture<GameCanvasComponent>;
+  let canvasService: jasmine.SpyObj<any>;
+  let gameLoopService: jasmine.SpyObj<any>;
+  let inputHandlerService: jasmine.SpyObj<any>;
+  let playerService: jasmine.SpyObj<any>;
+  let projectileService: jasmine.SpyObj<any>;
+  let collisionService: jasmine.SpyObj<any>;
+  let shieldService: jasmine.SpyObj<any>;
+  let livesService: jasmine.SpyObj<any>;
+  let enemyService: jasmine.SpyObj<any>;
+  let enemyMovementService: jasmine.SpyObj<any>;
+  let enemyShootingService: jasmine.SpyObj<any>;
+  let levelService: jasmine.SpyObj<any>;
+  let gameStateService: jasmine.SpyObj<any>;
+
+  let mockPlayer: Player;
+  let mockCanvas: HTMLCanvasElement;
+  let mockContext: CanvasRenderingContext2D;
+
+  beforeEach(() => {
+    // Create spies for all services
+    const canvasSpy = jasmine.createSpyObj('CanvasService', ['setupCanvas', 'clearCanvas']);
+    const gameLoopSpy = jasmine.createSpyObj('GameLoopService', ['start', 'stop']);
+    const inputHandlerSpy = jasmine.createSpyObj('InputHandlerService', [
+      'isLeftPressed', 'isRightPressed', 'isFirePressed', 
+      'isPausePressed', 'isEscapePressed', 'isRightClickPressed', 'enableInput'
+    ]);
+    const playerSpy = jasmine.createSpyObj('PlayerService', [
+      'createPlayer', 'getPlayer', 'update', 'canFire', 'resetFireCooldown', 'render'
+    ]);
+    const projectileSpy = jasmine.createSpyObj('ProjectileService', [
+      'fireProjectile', 'getProjectiles', 'updateProjectiles', 
+      'cleanupInactiveProjectiles', 'renderProjectiles'
+    ]);
+    const collisionSpy = jasmine.createSpyObj('CollisionService', [
+      'checkProjectileEnemyCollisions', 'checkProjectilePlayerCollisions',
+      'checkProjectileShieldCollisions', 'checkEnemyPlayerCollision', 'checkEnemyReachedBottom'
+    ]);
+    const shieldSpy = jasmine.createSpyObj('ShieldService', ['createShields', 'getShields', 'renderShields']);
+    const livesSpy = jasmine.createSpyObj('LivesService', [
+      'initializeLives', 'getLives', 'loseLife', 'renderLives'
+    ]);
+    const enemySpy = jasmine.createSpyObj('EnemyService', [
+      'createEnemyGrid', 'getEnemies', 'setEnemies', 'updateEnemies', 'renderEnemies'
+    ]);
+    const enemyMovementSpy = jasmine.createSpyObj('EnemyMovementService', [
+      'updateMovement', 'getMovementState', 'setMovementState', 'getDynamicSpeed'
+    ]);
+    const enemyShootingSpy = jasmine.createSpyObj('EnemyShootingService', [
+      'shouldEnemyShoot', 'selectShootingEnemy'
+    ]);
+    const levelSpy = jasmine.createSpyObj('LevelService', ['initLevel', 'getCurrentLevel']);
+    const gameStateSpy = jasmine.createSpyObj('GameStateService', [
+      'getCurrentState', 'updateScore', 'updateLevel', 'updateLives', 
+      'gameOver', 'pause', 'resume', 'reset'
+    ]);
+
+    TestBed.configureTestingModule({
+      declarations: [GameCanvasComponent],
+      providers: [
+        { provide: CanvasService, useValue: canvasSpy },
+        { provide: GameLoopService, useValue: gameLoopSpy },
+        { provide: InputHandlerService, useValue: inputHandlerSpy },
+        { provide: PlayerService, useValue: playerSpy },
+        { provide: ProjectileService, useValue: projectileSpy },
+        { provide: CollisionService, useValue: collisionSpy },
+        { provide: ShieldService, useValue: shieldSpy },
+        { provide: LivesService, useValue: livesSpy },
+        { provide: EnemyService, useValue: enemySpy },
+        { provide: EnemyMovementService, useValue: enemyMovementSpy },
+        { provide: EnemyShootingService, useValue: enemyShootingSpy },
+        { provide: LevelService, useValue: levelSpy },
+        { provide: GameStateService, useValue: gameStateSpy },
+        provideZonelessChangeDetection()
+      ]
+    });
+
+    fixture = TestBed.createComponent(GameCanvasComponent);
+    component = fixture.componentInstance;
+
+    // Get service instances
+    canvasService = TestBed.inject(CanvasService) as jasmine.SpyObj<CanvasService>;
+    gameLoopService = TestBed.inject(GameLoopService) as jasmine.SpyObj<GameLoopService>;
+    inputHandlerService = TestBed.inject(InputHandlerService) as jasmine.SpyObj<InputHandlerService>;
+    playerService = TestBed.inject(PlayerService) as jasmine.SpyObj<PlayerService>;
+    projectileService = TestBed.inject(ProjectileService) as jasmine.SpyObj<ProjectileService>;
+    collisionService = TestBed.inject(CollisionService) as jasmine.SpyObj<CollisionService>;
+    shieldService = TestBed.inject(ShieldService) as jasmine.SpyObj<ShieldService>;
+    livesService = TestBed.inject(LivesService) as jasmine.SpyObj<LivesService>;
+    enemyService = TestBed.inject(EnemyService) as jasmine.SpyObj<EnemyService>;
+    enemyMovementService = TestBed.inject(EnemyMovementService) as jasmine.SpyObj<EnemyMovementService>;
+    enemyShootingService = TestBed.inject(EnemyShootingService) as jasmine.SpyObj<EnemyShootingService>;
+    levelService = TestBed.inject(LevelService) as jasmine.SpyObj<LevelService>;
+    gameStateService = TestBed.inject(GameStateService) as jasmine.SpyObj<GameStateService>;
+
+    // Setup mock canvas and context
+    mockCanvas = document.createElement('canvas');
+    mockCanvas.width = 800;
+    mockCanvas.height = 600;
+    mockContext = mockCanvas.getContext('2d')!;
+
+    // Setup mock player
+    mockPlayer = {
+      x: 375,
+      y: 550,
+      width: 50,
+      height: 30,
+      velocity: 300,
+      color: '#00FF00',
+      canFire: true,
+      lastFireTime: 0
+    };
+
+    // Configure service default return values
+    canvasService.getContext.and.returnValue(mockContext);
+    playerService.createPlayer.and.returnValue(mockPlayer);
+    playerService.getPlayer.and.returnValue(mockPlayer);
+    playerService.canPlayerFire.and.returnValue(true);
+    projectileService.getProjectiles.and.returnValue([]);
+    shieldService.createShields.and.returnValue([]);
+    shieldService.getShields.and.returnValue([]);
+    livesService.getLives.and.returnValue(3);
+    enemyService.createEnemyGrid.and.returnValue([]);
+    enemyService.getEnemies.and.returnValue([]);
+    enemyMovementService.getMovementState.and.returnValue({ direction: 1, shouldDescend: false, speed: 50 });
+    enemyMovementService.getDynamicSpeed.and.returnValue(50);
+    levelService.initLevel.and.returnValue({
+      level: 1,
+      rows: 5,
+      columns: 11,
+      enemySpeed: 50,
+      fireRateCooldown: 1000,
+      descentAmount: 20
+    });
+    levelService.getCurrentLevel.and.returnValue(1);
+    gameStateService.getCurrentState.and.returnValue({
+      score: 0,
+      level: 1,
+      lives: 3,
+      isGameOver: false,
+      isPaused: false
+    });
+    inputHandlerService.isLeftPressed.and.returnValue(false);
+    inputHandlerService.isRightPressed.and.returnValue(false);
+    inputHandlerService.isFirePressed.and.returnValue(false);
+    inputHandlerService.isPausePressed.and.returnValue(false);
+    inputHandlerService.isEscapePressed.and.returnValue(false);
+    inputHandlerService.isRightClickPressed.and.returnValue(false);
+    collisionService.checkProjectileEnemyCollisions.and.returnValue([]);
+    collisionService.checkProjectilePlayerCollisions.and.returnValue(null);
+    collisionService.checkProjectileShieldCollisions.and.returnValue([]);
+    collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+    collisionService.checkEnemyReachedBottom.and.returnValue(false);
+    enemyShootingService.shouldEnemyShoot.and.returnValue(false);
+  });
+
+  describe('Enemy-Player Direct Collision', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should trigger game over when enemy collides with player', () => {
+      const mockEnemy: Enemy = {
+        x: mockPlayer.x,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyPlayerCollision).toHaveBeenCalledWith([mockEnemy], mockPlayer);
+      expect(gameStateService.gameOver).toHaveBeenCalled();
+    });
+
+    it('should not trigger game over when no enemy collides with player', () => {
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: 100,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyPlayerCollision).toHaveBeenCalled();
+      expect(gameStateService.gameOver).not.toHaveBeenCalled();
+    });
+
+    it('should check enemy-player collision every frame', () => {
+      enemyService.getEnemies.and.returnValue([]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+
+      component.update(16.67);
+      component.update(16.67);
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyPlayerCollision).toHaveBeenCalledTimes(3);
+    });
+
+    it('should stop checking collisions after game over', () => {
+      gameStateService.getCurrentState.and.returnValue({
+        score: 0,
+        level: 1,
+        lives: 0,
+        isGameOver: true,
+        isPaused: false
+      });
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyPlayerCollision).not.toHaveBeenCalled();
+    });
+
+    it('should pass correct player position to collision check', () => {
+      const customPlayer: Player = {
+        x: 200,
+        y: 500,
+        width: 50,
+        height: 30,
+        velocity: 300,
+        color: '#00FF00'
+      };
+      playerService.getPlayer.and.returnValue(customPlayer);
+
+      const mockEnemies: Enemy[] = [
+        { x: 100, y: 100, width: 30, height: 20, active: true, type: 'bottom' as const, color: '#FF0000', pointValue: 10 }
+      ];
+      enemyService.getEnemies.and.returnValue(mockEnemies);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyPlayerCollision).toHaveBeenCalledWith(mockEnemies, customPlayer);
+    });
+  });
+
+  describe('Enemy Reached Bottom Threshold', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should trigger game over when enemy reaches player Y level', () => {
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalledWith([mockEnemy], mockPlayer.y);
+      expect(gameStateService.gameOver).toHaveBeenCalled();
+    });
+
+    it('should not trigger game over when enemies are above threshold', () => {
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: 100,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalled();
+      expect(gameStateService.gameOver).not.toHaveBeenCalled();
+    });
+
+    it('should trigger game over when any enemy reaches bottom', () => {
+      const mockEnemies: Enemy[] = [
+        { x: 100, y: 100, width: 30, height: 20, active: true, type: 'bottom' as const, color: '#FF0000', pointValue: 10 },
+        { x: 200, y: mockPlayer.y, width: 30, height: 20, active: true, type: 'bottom' as const, color: '#FF0000', pointValue: 10 },
+        { x: 300, y: 150, width: 30, height: 20, active: true, type: 'bottom' as const, color: '#FF0000', pointValue: 10 }
+      ];
+
+      enemyService.getEnemies.and.returnValue(mockEnemies);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(gameStateService.gameOver).toHaveBeenCalled();
+    });
+
+    it('should check bottom threshold every frame', () => {
+      enemyService.getEnemies.and.returnValue([]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+
+      component.update(16.67);
+      component.update(16.67);
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalledTimes(3);
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalledWith([], mockPlayer.y);
+    });
+
+    it('should use player Y position as threshold', () => {
+      const customPlayer: Player = {
+        x: 375,
+        y: 500,
+        width: 50,
+        height: 30,
+        velocity: 300,
+        color: '#00FF00'
+      };
+      playerService.getPlayer.and.returnValue(customPlayer);
+
+      const mockEnemies: Enemy[] = [
+        { x: 100, y: 450, width: 30, height: 20, active: true, type: 'bottom' as const, color: '#FF0000', pointValue: 10 }
+      ];
+      enemyService.getEnemies.and.returnValue(mockEnemies);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalledWith(mockEnemies, 500);
+    });
+  });
+
+  describe('Game Over State Updates', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should stop game updates when game over is triggered', () => {
+      const mockEnemy: Enemy = {
+        x: mockPlayer.x,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      // First frame - collision occurs
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(true);
+
+      component.update(16.67);
+      expect(gameStateService.gameOver).toHaveBeenCalled();
+
+      // Second frame - game is now over, updates should stop
+      gameStateService.getCurrentState.and.returnValue({
+        score: 100,
+        level: 1,
+        lives: 0,
+        isGameOver: true,
+        isPaused: false
+      });
+
+      const updateCallsBefore = playerService.update.calls.count();
+      component.update(16.67);
+      const updateCallsAfter = playerService.update.calls.count();
+
+      // Player should not be updated after game over
+      expect(updateCallsAfter).toBe(updateCallsBefore);
+    });
+
+    it('should call gameOver only once when collision detected', () => {
+      const mockEnemy: Enemy = {
+        x: mockPlayer.x,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(gameStateService.gameOver).toHaveBeenCalledTimes(1);
+    });
+
+    it('should trigger game over from either condition', () => {
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(gameStateService.gameOver).toHaveBeenCalled();
+    });
+  });
+
+  describe('Console Logging for Game Over', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should log message when enemy collides with player', () => {
+      spyOn(console, 'log');
+      const mockEnemy: Enemy = {
+        x: mockPlayer.x,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(console.log).toHaveBeenCalledWith('GAME OVER: Enemy reached player!');
+    });
+
+    it('should log message when enemy reaches bottom threshold', () => {
+      spyOn(console, 'log');
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(console.log).toHaveBeenCalledWith('GAME OVER: Enemy reached bottom!');
+    });
+
+    it('should not log when no game over condition is met', () => {
+      spyOn(console, 'log');
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: 100,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+
+      component.update(16.67);
+
+      expect(console.log).not.toHaveBeenCalledWith(jasmine.stringContaining('GAME OVER'));
+    });
+  });
+
+  describe('Edge Cases', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should handle empty enemy array', () => {
+      enemyService.getEnemies.and.returnValue([]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+
+      expect(() => component.update(16.67)).not.toThrow();
+      expect(gameStateService.gameOver).not.toHaveBeenCalled();
+    });
+
+    it('should not trigger game over when paused', () => {
+      const mockEnemy: Enemy = {
+        x: mockPlayer.x,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(true);
+      gameStateService.getCurrentState.and.returnValue({
+        score: 100,
+        level: 1,
+        lives: 3,
+        isGameOver: false,
+        isPaused: true
+      });
+
+      component.update(16.67);
+
+      // Collision checks should not run when paused
+      expect(collisionService.checkEnemyPlayerCollision).not.toHaveBeenCalled();
+      expect(gameStateService.gameOver).not.toHaveBeenCalled();
+    });
+
+    it('should handle multiple inactive enemies', () => {
+      const mockEnemies: Enemy[] = [
+        { x: 100, y: mockPlayer.y, width: 30, height: 20, active: false, type: 'bottom' as const, color: '#FF0000', pointValue: 10 },
+        { x: 200, y: mockPlayer.y, width: 30, height: 20, active: false, type: 'bottom' as const, color: '#FF0000', pointValue: 10 }
+      ];
+
+      enemyService.getEnemies.and.returnValue(mockEnemies);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+
+      component.update(16.67);
+
+      expect(gameStateService.gameOver).not.toHaveBeenCalled();
+    });
+
+    it('should handle collision check during level transition', () => {
+      // Simulate level transition state
+      gameStateService.getCurrentState.and.returnValue({
+        score: 100,
+        level: 2,
+        lives: 3,
+        isGameOver: false,
+        isPaused: false
+      });
+
+      // During transition, collision checks should not run
+      component.update(16.67);
+
+      // Note: This test assumes transition logic prevents collision checks
+      // The actual behavior depends on component implementation
+    });
+
+    it('should prioritize game over state check before collision checks', () => {
+      gameStateService.getCurrentState.and.returnValue({
+        score: 0,
+        level: 1,
+        lives: 0,
+        isGameOver: true,
+        isPaused: false
+      });
+
+      component.update(16.67);
+
+      // No collision checks should happen if game is already over
+      expect(collisionService.checkEnemyPlayerCollision).not.toHaveBeenCalled();
+      expect(collisionService.checkEnemyReachedBottom).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Integration - Collision Flow', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should check both collision types in correct order', () => {
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: 100,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+
+      component.update(16.67);
+
+      // Both checks should be called
+      expect(collisionService.checkEnemyPlayerCollision).toHaveBeenCalled();
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalled();
+    });
+
+    it('should still check bottom threshold even if collision check is false', () => {
+      const mockEnemy: Enemy = {
+        x: 100,
+        y: mockPlayer.y,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(true);
+
+      component.update(16.67);
+
+      expect(collisionService.checkEnemyPlayerCollision).toHaveBeenCalled();
+      expect(collisionService.checkEnemyReachedBottom).toHaveBeenCalled();
+      expect(gameStateService.gameOver).toHaveBeenCalled();
+    });
+
+    it('should handle rapid successive collision frames', () => {
+      const mockEnemy: Enemy = {
+        x: mockPlayer.x,
+        y: mockPlayer.y - 5,
+        width: 30,
+        height: 20,
+        active: true,
+        type: 'bottom' as const,
+        color: '#FF0000',
+        pointValue: 10
+      };
+
+      enemyService.getEnemies.and.returnValue([mockEnemy]);
+
+      // Frame 1: No collision
+      collisionService.checkEnemyPlayerCollision.and.returnValue(false);
+      collisionService.checkEnemyReachedBottom.and.returnValue(false);
+      component.update(16.67);
+      expect(gameStateService.gameOver).not.toHaveBeenCalled();
+
+      // Frame 2: Collision detected
+      collisionService.checkEnemyPlayerCollision.and.returnValue(true);
+      component.update(16.67);
+      expect(gameStateService.gameOver).toHaveBeenCalledTimes(1);
+
+      // Frame 3: Game over state set, no more updates
+      gameStateService.getCurrentState.and.returnValue({
+        score: 100,
+        level: 1,
+        lives: 0,
+        isGameOver: true,
+        isPaused: false
+      });
+      component.update(16.67);
+      expect(gameStateService.gameOver).toHaveBeenCalledTimes(1); // Should not be called again
+    });
+  });
+});

@@ -1,0 +1,127 @@
+<div class="settings-dialog">
+  <h2 mat-dialog-title>Settings</h2>
+
+  <mat-dialog-content>
+    <form [formGroup]="settingsForm" class="settings-form">
+      <!-- Sound & Music Section -->
+      <div class="settings-section">
+        <h3>Sound & Music</h3>
+        
+        <mat-checkbox 
+          formControlName="soundEnabled"
+          class="settings-checkbox">
+          Sound Effects
+        </mat-checkbox>
+
+        <mat-checkbox 
+          formControlName="musicEnabled"
+          class="settings-checkbox">
+          Background Music
+        </mat-checkbox>
+
+        <div class="volume-control">
+          <label>Volume</label>
+          <mat-slider 
+            [min]="0" 
+            [max]="100" 
+            [step]="5"
+            [displayWith]="formatVolumeLabel"
+            class="volume-slider">
+            <input 
+              matSliderThumb 
+              formControlName="volume"
+              aria-label="Volume" />
+          </mat-slider>
+          <span class="volume-value">{{ settingsForm.get('volume')?.value }}%</span>
+        </div>
+      </div>
+
+      <!-- Difficulty Section -->
+      <div class="settings-section">
+        <h3>Difficulty</h3>
+        
+        <mat-radio-group 
+          formControlName="difficulty"
+          class="difficulty-group">
+          <mat-radio-button 
+            [value]="Difficulty.EASY"
+            class="difficulty-option">
+            Easy
+          </mat-radio-button>
+          <mat-radio-button 
+            [value]="Difficulty.NORMAL"
+            class="difficulty-option">
+            Normal
+          </mat-radio-button>
+          <mat-radio-button 
+            [value]="Difficulty.HARD"
+            class="difficulty-option">
+            Hard
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- Controls Section -->
+      <div class="settings-section">
+        <h3>Controls</h3>
+        
+        <mat-radio-group 
+          formControlName="controlScheme"
+          class="control-scheme-group">
+          <mat-radio-button 
+            [value]="ControlScheme.KEYBOARD"
+            class="control-option">
+            Keyboard (Arrow Keys / WASD)
+          </mat-radio-button>
+          <mat-radio-button 
+            [value]="ControlScheme.MOUSE"
+            class="control-option">
+            Mouse
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button 
+      mat-button 
+      type="button"
+      (click)="onReset()"
+      class="reset-button">
+      Reset to Defaults
+    </button>
+    
+    <div class="action-buttons">
+      <button 
+        mat-button 
+        type="button"
+        (click)="onCancel()"
+        [disabled]="isSaving">
+        Cancel
+      </button>
+      
+      <button 
+        mat-raised-button 
+        color="primary"
+        type="submit"
+        (click)="onSave()"
+        [disabled]="settingsForm.invalid || isSaving">
+        @if (isSaving) {
+          <mat-icon>hourglass_top</mat-icon>
+          Saving...
+        } @else {
+          Save
+        }
+      </button>
+    </div>
+  </mat-dialog-actions>
+</div>

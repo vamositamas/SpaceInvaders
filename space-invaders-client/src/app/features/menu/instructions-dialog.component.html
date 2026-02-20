@@ -1,0 +1,26 @@
+<h2 mat-dialog-title>
+  <mat-icon>help</mat-icon>
+  How to Play
+</h2>
+
+<mat-dialog-content>
+  <mat-accordion class="instructions-accordion">
+    <mat-expansion-panel *ngFor="let section of sections" [expanded]="false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon *ngIf="section.icon">{{ section.icon }}</mat-icon>
+          {{ section.title }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      
+      <div class="section-content" [innerHTML]="section.content"></div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="primary" (click)="close()" cdkFocusInitial>
+    <mat-icon>check</mat-icon>
+    Got It!
+  </button>
+</mat-dialog-actions>

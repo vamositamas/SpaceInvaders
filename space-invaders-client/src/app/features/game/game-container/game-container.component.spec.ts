@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { GameContainerComponent } from './game-container.component';
 import { ConfigService } from '../../../core/services/config.service';
 import { GameStateService } from '../../../core/services/game-state.service';
+import { CanvasService } from '../../../core/services/canvas.service';
 import { BehaviorSubject } from 'rxjs';
 import { GameConfig } from '../../../core/models';
 
@@ -28,13 +29,24 @@ describe('GameContainerComponent', () => {
       config$: new BehaviorSubject<GameConfig | null>(mockConfig)
     });
     
-    const gameStateSpy = jasmine.createSpyObj('GameStateService', ['initGame']);
+    const gameStateSpy = jasmine.createSpyObj('GameStateService', ['initGame'], {
+      gameState$: new BehaviorSubject({
+        score: 0, lives: 3, level: 1, isPaused: false, isGameOver: false, isPlaying: false
+      }),
+      isPaused$: new BehaviorSubject<boolean>(false),
+      isGameOver$: new BehaviorSubject<boolean>(false)
+    });
+
+    const canvasSpy = jasmine.createSpyObj('CanvasService', [
+      'initCanvas', 'clearCanvas', 'drawRect', 'getContext'
+    ]);
 
     await TestBed.configureTestingModule({
       imports: [GameContainerComponent],
       providers: [
         { provide: ConfigService, useValue: configSpy },
         { provide: GameStateService, useValue: gameStateSpy },
+        { provide: CanvasService, useValue: canvasSpy },
         provideZonelessChangeDetection()
       ]
     }).compileComponents();

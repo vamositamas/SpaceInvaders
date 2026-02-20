@@ -119,3 +119,501 @@
 * Missing error handling (should use `anyhow::Result`)
 * Async/await misuse or blocking operations in async contexts
 * Improper trait implementations
+
+---
+
+## Code Quality Requirements
+
+### ZERO TOLERANCE FOR CODE DUPLICATION - Hard Rule
+
+**This is a mandatory, non-negotiable requirement. Code duplication is a review blocker.**
+
+* **Never copy-paste code blocks**
+* **Extract shared logic into reusable functions, services, or utilities**
+* **Use inheritance, composition, or mixins for shared behavior**
+* **Create utility functions for repeated operations**
+* **Use constants for repeated values**
+* **If you find yourself writing similar code twice, refactor immediately**
+* **DRY (Don't Repeat Yourself) principle is mandatory**
+* **Duplicated code = rejected code review**
+
+#### Anti-Duplication Strategies:
+
+1. **Extract Utility Functions**
+   ```typescript
+   // ❌ BAD - Duplicated calculation
+   const damage1 = baseAttack * multiplier + bonus;
+   const damage2 = baseAttack * multiplier + bonus;
+   
+   // ✅ GOOD - Shared utility
+   const calculateDamage = (baseAttack: number, multiplier: number, bonus: number) => 
+     baseAttack * multiplier + bonus;
+   ```
+
+2. **Create Shared Services**
+   ```typescript
+   // ❌ BAD - Logic duplicated in components
+   // ✅ GOOD - Logic centralized in service
+   @Injectable()
+   export class CollisionService {
+     checkCollision(entity1: Entity, entity2: Entity): boolean { ... }
+   }
+   ```
+
+3. **Use Composition**
+   ```typescript
+   // ❌ BAD - Duplicating behavior
+   // ✅ GOOD - Compose from reusable parts
+   class MovableEntity {
+     constructor(private movement: MovementBehavior) {}
+     move(deltaTime: number) { this.movement.move(deltaTime); }
+   }
+   ```
+
+4. **Leverage Inheritance**
+   ```typescript
+   // ❌ BAD - Duplicating base properties
+   // ✅ GOOD - Inherit common behavior
+   abstract class GameEntity {
+     constructor(public x: number, public y: number) {}
+   }
+   class Enemy extends GameEntity { ... }
+   class Projectile extends GameEntity { ... }
+   ```
+
+5. **Constants for Repeated Values**
+   ```typescript
+   // ❌ BAD - Magic numbers repeated
+   const width1 = 800;
+   const width2 = 800;
+   
+   // ✅ GOOD - Single source of truth
+   export const CANVAS_WIDTH = 800;
+   ```
+
+6. **Generic Functions**
+   ```typescript
+   // ❌ BAD - Similar functions for different types
+   // ✅ GOOD - Generic function
+   function findById<T extends { id: string }>(items: T[], id: string): T | undefined {
+     return items.find(item => item.id === id);
+   }
+   ```
+
+7. **Higher-Order Functions**
+   ```typescript
+   // ❌ BAD - Repeated iteration patterns
+   // ✅ GOOD - Reusable higher-order function
+   const processEntities = <T>(entities: T[], processor: (entity: T) => void) => {
+     entities.forEach(processor);
+   };
+   ```
+
+**Remember:** If you write the same code twice, you're doing it wrong. Stop and refactor immediately.
+
+---
+
+## Space Invaders Project Rules
+
+### Architecture Patterns
+
+**Service-Based Architecture:**
+* All business logic must reside in services, not components
+* Services should be single-responsibility and focused
+* Use dependency injection for all service dependencies
+* Components are presentation-only and delegate to services
+
+**Separation of Concerns:**
+* **Services** - Business logic, data management, calculations
+* **Components** - UI rendering, user interaction, view state
+* **Models** - Type definitions, interfaces, data structures
+* **Utils** - Pure functions, helpers, transformations
+
+**File Organization:**
+* Backend: `/src/services`, `/src/controllers`, `/src/routes`, `/src/middleware`, `/src/models`
+* Frontend: `/src/app/core/services`, `/src/app/features`, `/src/app/shared`, `/src/app/core/models`
+* Tests: Mirror the source structure (e.g., `service.ts` → `service.spec.ts`)
+
+### Naming Conventions
+
+**Files:**
+* Services: `<name>.service.ts` (e.g., `player.service.ts`)
+* Components: `<name>.component.ts` (e.g., `game-canvas.component.ts`)
+* Models: `<name>.model.ts` (e.g., `game-entities.model.ts`)
+* Tests: `<name>.spec.ts` or `<name>.test.js`
+* Utilities: `<name>.util.ts` (e.g., `collision.util.ts`)
+
+**Classes/Interfaces:**
+* PascalCase for classes and interfaces (e.g., `PlayerService`, `GameState`)
+* Suffix interfaces with purpose when needed (e.g., `GameStateInterface`)
+
+**Functions/Methods:**
+* camelCase for functions and methods (e.g., `updatePlayer`, `checkCollision`)
+* Verb-first naming for actions (e.g., `createEnemy`, `removeProjectile`)
+* Boolean functions start with `is`, `has`, `can`, or `should` (e.g., `isGameOver`, `canPlayerFire`)
+
+**Constants:**
+* UPPER_SNAKE_CASE for true constants (e.g., `MAX_ENEMIES`, `FIRE_RATE_MS`)
+* Use const objects for configuration groups
+
+### Angular-Specific Rules
+
+**Component Lifecycle:**
+* Always unsubscribe from observables in `ngOnDestroy`
+* Use `takeUntil` or `AsyncPipe` to prevent memory leaks
+* Clean up event listeners and timers in `ngOnDestroy`
+
+**State Management:**
+* Use RxJS BehaviorSubjects for reactive state
+* Expose observables, not subjects (e.g., `score$` not `scoreSubject`)
+* Update state through service methods, not direct subject access
+
+**Performance:**
+* Use `OnPush` change detection where possible
+* Avoid logic in templates
+* Use `trackBy` functions in `*ngFor`
+* Debounce user input where appropriate
+
+### Game Development Best Practices
+
+**Frame-Independent Movement:**
+* Always use `deltaTime` for movement and animations
+* Target 60 FPS but ensure gameplay works at variable frame rates
+* Formula: `newPosition = position + (velocity * deltaTime)`
+
+**Entity Management:**
+* Use object pooling for frequently created/destroyed objects (projectiles)
+* Mark entities as inactive instead of deleting when possible
+* Clean up inactive entities periodically, not every frame
+
+**Collision Detection:**
+* Use spatial partitioning for large numbers of entities
+* Only check collisions between relevant entity types
+* Skip collision checks for inactive entities
+* AABB (Axis-Aligned Bounding Box) for rectangular entities
+
+**Game Loop:**
+* Separate update and render logic
+* Update game state before rendering
+* Use `requestAnimationFrame` for consistent timing
+* Handle pause state cleanly (stop updates, continue rendering)
+
+### Error Handling
+
+**Backend (Node.js):**
+* Always use try-catch for async operations
+* Return meaningful error messages
+* Use appropriate HTTP status codes
+* Log errors with context for debugging
+* Never expose stack traces in production
+
+**Frontend (Angular):**
+* Use RxJS `catchError` operator for HTTP calls
+* Display user-friendly error messages
+* Log errors to console in development
+* Implement retry logic with exponential backoff for transient failures
+
+**Validation:**
+* Validate all user input on both client and server
+* Sanitize data to prevent XSS and injection attacks
+* Use schema validation libraries (e.g., Joi, class-validator)
+
+### Testing Requirements
+
+**Unit Tests:**
+* Test each function/method in isolation
+* Mock all dependencies
+* Cover happy path, error cases, and edge cases
+* Test boundary conditions (0, negative, maximum values)
+* Aim for 100% code coverage
+
+**Integration Tests:**
+* Test service interactions
+* Test API endpoints end-to-end
+* Verify data persistence
+* Test authentication/authorization flows
+
+**E2E Tests:**
+* Test critical user journeys
+* Cover main menu → game → game over → high score flow
+* Test all navigation routes
+* Verify responsive behavior
+
+**Test Naming:**
+* Descriptive test names: `should return true when player can fire and cooldown expired`
+* Use `describe` blocks to group related tests
+* Use `it` or `test` for individual test cases
+
+### Performance Standards
+
+**Mandatory Targets:**
+* Maintain consistent 60 FPS during gameplay
+* Keep memory usage under 200MB
+* Page load time under 3 seconds
+* Input latency under 50ms
+* No memory leaks during extended play sessions
+
+**Optimization Strategies:**
+* Profile before optimizing
+* Use browser DevTools Performance tab
+* Implement object pooling for projectiles
+* Use spatial partitioning for collision detection
+* Batch canvas draw calls when possible
+* Minimize DOM manipulation
+* Debounce expensive operations
+
+### Accessibility Requirements
+
+**WCAG 2.1 Level AA Compliance:**
+* All interactive elements must have ARIA labels
+* Keyboard navigation for all UI elements
+* Tab order must be logical
+* Focus indicators must be visible
+* Color contrast ratio at least 4.5:1
+* Screen reader announcements for game state changes
+* Support high contrast mode
+
+**Implementation:**
+* Use semantic HTML elements
+* Add `aria-label` to buttons and controls
+* Implement keyboard shortcuts (P for pause, Escape for menu)
+* Announce score updates to screen readers
+* Test with keyboard-only navigation
+* Test with screen reader software
+
+### Security Requirements
+
+**Input Validation:**
+* Validate player names (1-20 characters, alphanumeric)
+* Sanitize all user input to prevent XSS
+* Validate scores against game rules (no impossible scores)
+* Rate limit API endpoints (prevent abuse)
+
+**Backend Security:**
+* Use Helmet.js for security headers
+* Configure CORS properly
+* Implement rate limiting with express-rate-limit
+* Never trust client-side data
+* Validate duration and score relationships (anti-cheat)
+
+**Frontend Security:**
+* Sanitize any HTML rendering
+* Use Angular's built-in XSS protection
+* Don't expose sensitive data in localStorage
+* Use HTTPS in production
+
+### Documentation Standards
+
+**Code Documentation:**
+* JSDoc/TSDoc for all public methods
+* Include parameter types and return types
+* Document complex algorithms
+* Explain non-obvious decisions with comments
+* Keep comments up-to-date with code changes
+
+**API Documentation:**
+* Use Swagger/OpenAPI for REST APIs
+* Document all endpoints, parameters, and responses
+* Include example requests and responses
+* Document error codes and meanings
+
+**Project Documentation:**
+* README with setup instructions
+* CHANGELOG for version history
+* CONTRIBUTING guide for new developers
+* Architecture diagrams for complex systems
+* User guide for gameplay instructions
+
+### Git Workflow
+
+**Commit Messages:**
+* Use conventional commits format
+* Format: `type(scope): description`
+* Types: feat, fix, test, refactor, docs, style, chore
+* Example: `feat(player): add shooting cooldown mechanism`
+
+**Branch Strategy:**
+* `main` - production-ready code
+* `develop` - integration branch
+* `feature/<name>` - new features
+* `fix/<name>` - bug fixes
+* `test/<name>` - test additions
+
+**Pull Requests:**
+* Link to related issue or prompt number
+* Include test coverage report
+* Verify all tests pass
+* Request code review
+* Squash commits before merging
+
+### Prompt-Driven Development
+
+**Following Prompts:**
+* Complete prompts in sequential order (P14 → P15 → P16...)
+* Don't skip ahead or work on multiple prompts simultaneously
+* Each prompt must be 100% complete before moving to next
+* Mark prompt as complete only when all acceptance criteria met
+
+**Acceptance Criteria:**
+* All tests must pass (100% pass rate)
+* Test coverage meets or exceeds target (aim for 100%)
+* Code follows all style and architecture guidelines
+* No code duplication exists
+* Documentation is complete
+* Performance targets are met
+* Accessibility requirements are satisfied
+* Security validation passes
+* Code review approved
+
+**Verification Steps:**
+* Run full test suite: `npm test` (frontend) and `npm test` (backend)
+* Check test coverage: `npm run test:coverage`
+* Verify no linting errors: `npm run lint`
+* Manual testing of all functionality
+* Performance profiling (use Chrome DevTools)
+* Accessibility audit (use aXe or Lighthouse)
+* Cross-browser testing (Chrome, Firefox, Safari, Edge)
+
+### Common Pitfalls to Avoid
+
+**Memory Leaks:**
+* Forgetting to unsubscribe from observables
+* Not cleaning up event listeners
+* Accumulating inactive entities without cleanup
+* Creating new objects every frame instead of reusing
+
+**Performance Issues:**
+* Performing complex calculations every frame
+* Not using `deltaTime` for movement
+* Inefficient collision detection (N² complexity)
+* Excessive DOM manipulation
+* Not using object pooling for projectiles
+
+**State Management:**
+* Mutating state directly instead of creating new objects
+* Exposing BehaviorSubjects instead of observables
+* Not handling race conditions in async operations
+* Sharing mutable state between components
+
+**Testing Mistakes:**
+* Testing implementation details instead of behavior
+* Not mocking dependencies properly
+* Incomplete test coverage (missing edge cases)
+* Tests that depend on execution order
+* Not cleaning up after tests (shared state pollution)
+
+**Angular-Specific:**
+* Using `subscribe()` without unsubscribing
+* Mutating `@Input()` properties
+* Heavy logic in templates or getters
+* Not using `OnPush` change detection
+* Circular dependencies between services
+
+### TypeScript Best Practices
+
+**Type Safety:**
+* Avoid `any` type - use `unknown` or proper types
+* Define interfaces for all data structures
+* Use union types for finite sets of values
+* Enable strict mode in tsconfig.json
+* Use type guards for narrowing types
+
+**Modern TypeScript Features:**
+* Use optional chaining (`?.`) and nullish coalescing (`??`)
+* Leverage utility types (`Partial`, `Pick`, `Omit`, `Record`)
+* Use `const` assertions for literal types
+* Implement proper generics for reusable code
+* Use `readonly` for immutable properties
+
+**Enums and Constants:**
+* Use `const enum` for compile-time constants
+* Prefer string enums over numeric for debugging
+* Group related constants in const objects
+* Export constants from a dedicated file
+
+### Code Review Checklist
+
+Before submitting code, verify:
+
+**Correctness:**
+- [ ] All tests pass (run `npm test`)
+- [ ] Test coverage is at target level (run `npm run test:coverage`)
+- [ ] Code implements all acceptance criteria
+- [ ] Edge cases are handled properly
+- [ ] Error handling is comprehensive
+- [ ] **ZERO code duplication** - This is a hard blocker
+
+**Architecture:**
+- [ ] Business logic is in services, not components
+- [ ] Single Responsibility Principle followed
+- [ ] Dependencies are properly injected
+- [ ] No circular dependencies
+- [ ] Proper separation of concerns
+- [ ] **No duplicated code between files** - Extract shared logic
+
+**Code Quality:**
+- [ ] No linting errors (run `npm run lint`)
+- [ ] TypeScript strict mode compliance
+- [ ] Meaningful variable/function names
+- [ ] Code is self-documenting
+- [ ] Complex logic has explanatory comments
+- [ ] **No copy-pasted code blocks** - Use shared utilities
+
+**Testing:**
+- [ ] Tests follow TDD approach (written first)
+- [ ] All code paths are tested
+- [ ] Edge cases have test coverage
+- [ ] Mocks are used properly
+- [ ] Tests are readable and maintainable
+
+**Performance:**
+- [ ] No memory leaks (run profiler)
+- [ ] Maintains 60 FPS during gameplay
+- [ ] Efficient algorithms used
+- [ ] Object pooling implemented where needed
+- [ ] No unnecessary re-renders or calculations
+
+**Accessibility:**
+- [ ] ARIA labels on interactive elements
+- [ ] Keyboard navigation works
+- [ ] Focus indicators visible
+- [ ] Color contrast meets standards
+- [ ] Screen reader tested
+
+**Security:**
+- [ ] Input validation on client and server
+- [ ] XSS protection in place
+- [ ] No sensitive data in localStorage
+- [ ] Rate limiting configured
+- [ ] CORS properly configured
+
+**Documentation:**
+- [ ] JSDoc comments on public APIs
+- [ ] README updated if needed
+- [ ] API documentation updated
+- [ ] Complex algorithms explained
+- [ ] Usage examples provided
+
+**Git:**
+- [ ] Conventional commit message format
+- [ ] Branch name follows convention
+- [ ] No merge conflicts
+- [ ] Commits are logical and atomic
+- [ ] PR description includes context
+
+---
+
+## Final Reminders
+
+1. **TDD is mandatory** - Tests first, always
+2. **Zero duplication** - Extract, abstract, reuse
+3. **Services for logic** - Keep components thin
+4. **Test everything** - Aim for 100% coverage
+5. **Profile performance** - Meet the 60 FPS target
+6. **Accessibility matters** - WCAG 2.1 AA compliance
+7. **Security first** - Validate everything
+8. **Document as you go** - Don't leave it for later
+9. **Follow prompts sequentially** - Complete before moving on
+10. **Code review yourself** - Use the checklist above
+
+These rules are not suggestions—they are requirements. Following them ensures high-quality, maintainable code that meets all project standards.

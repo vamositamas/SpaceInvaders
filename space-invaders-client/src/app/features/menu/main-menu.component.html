@@ -1,0 +1,71 @@
+<div class="menu-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading" role="status" aria-live="polite">
+    <mat-spinner></mat-spinner>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="hasError" class="error-message" role="alert">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <h2>Error</h2>
+        <p>{{ errorMessage }}</p>
+        <button mat-raised-button color="primary" (click)="loadConfiguration()">
+          Retry
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Main Menu -->
+  <div *ngIf="!isLoading && !hasError" class="menu-content">
+    <!-- Game Title -->
+    <header class="game-header">
+      <h1 class="game-title">SPACE INVADERS</h1>
+      <p class="game-subtitle">Classic Arcade Game</p>
+    </header>
+
+    <!-- Navigation Buttons -->
+    <nav class="menu-nav" aria-label="Main navigation">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        class="menu-button"
+        (click)="startGame()"
+        aria-label="Start new game">
+        START GAME
+      </button>
+
+      <button 
+        mat-raised-button 
+        color="accent" 
+        class="menu-button"
+        (click)="viewHighScores()"
+        aria-label="View high scores">
+        HIGH SCORES
+      </button>
+
+      <button 
+        mat-raised-button 
+        class="menu-button"
+        (click)="openSettings()"
+        aria-label="Open settings">
+        SETTINGS
+      </button>
+
+      <button 
+        mat-raised-button 
+        class="menu-button"
+        (click)="openInstructions()"
+        aria-label="View game instructions">
+        INSTRUCTIONS
+      </button>
+    </nav>
+
+    <!-- Footer -->
+    <footer class="menu-footer">
+      <p class="copyright">&copy; 2026 Space Invaders</p>
+    </footer>
+  </div>
+</div>

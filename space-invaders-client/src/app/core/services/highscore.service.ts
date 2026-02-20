@@ -54,6 +54,7 @@ export class HighScoreService {
         tap(scores => this.highScoresSubject.next(scores)),
         catchError(error => {
           console.error('Error loading high scores:', error);
+          this.highScoresSubject.next([]);
           return of([]);
         })
       )
@@ -77,6 +78,24 @@ export class HighScoreService {
           throw error;
         })
       );
+  }
+
+  /**
+   * Checks if a score qualifies as a high score (synchronously)
+   * @param score Score to check
+   * @returns Boolean indicating if score qualifies
+   */
+  checkIfHighScore(score: number): boolean {
+    const currentScores = this.highScoresSubject.value;
+    
+    // If less than 100 scores, any score qualifies
+    if (currentScores.length < 100) {
+      return true;
+    }
+    
+    // Check if score is higher than the lowest score
+    const lowestScore = currentScores[currentScores.length - 1];
+    return score > lowestScore.score;
   }
 
   /**
