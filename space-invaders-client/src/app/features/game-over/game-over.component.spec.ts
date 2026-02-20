@@ -26,9 +26,12 @@ describe('GameOverComponent', () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     mockGameStateService = jasmine.createSpyObj(
       'GameStateService',
-      ['resetGame'],
+      ['resetGame', 'getCurrentState'],
       { gameOver$: of(true) }
     );
+    mockGameStateService.getCurrentState.and.returnValue({
+      score: 0, level: 1, lives: 3, isPaused: false, isGameOver: false, isPlaying: false
+    });
     mockHighScoreService = jasmine.createSpyObj(
       'HighScoreService',
       ['checkIfHighScore', 'addHighScore', 'getHighScores'],
@@ -80,11 +83,31 @@ describe('GameOverComponent', () => {
     it('should initialize playerName with empty string', () => {
       expect(component.form?.get('playerName')?.value).toBe('');
     });
+
+    it('should read finalScore and levelReached from GameStateService on init', () => {
+      mockGameStateService.getCurrentState.and.returnValue({
+        score: 3500, level: 4, lives: 1, isPaused: false, isGameOver: true, isPlaying: false
+      });
+      fixture.detectChanges(); // triggers ngOnInit
+      expect(component.finalScore).toBe(3500);
+      expect(component.levelReached).toBe(4);
+    });
+
+    it('should pass actual score to checkIfHighScore on init', () => {
+      mockGameStateService.getCurrentState.and.returnValue({
+        score: 2000, level: 2, lives: 2, isPaused: false, isGameOver: true, isPlaying: false
+      });
+      mockHighScoreService.checkIfHighScore.and.returnValue(true);
+      fixture.detectChanges();
+      expect(mockHighScoreService.checkIfHighScore).toHaveBeenCalledWith(2000);
+    });
   });
 
   describe('Game State Display', () => {
     it('should display final score', async () => {
-      component.finalScore = 2500;
+      mockGameStateService.getCurrentState.and.returnValue({
+        score: 2500, level: 1, lives: 3, isPaused: false, isGameOver: true, isPlaying: false
+      });
       fixture.detectChanges();
       await fixture.whenStable();
       const compiled = fixture.nativeElement as HTMLElement;
@@ -93,7 +116,9 @@ describe('GameOverComponent', () => {
     });
 
     it('should display level reached', () => {
-      component.levelReached = 5;
+      mockGameStateService.getCurrentState.and.returnValue({
+        score: 0, level: 5, lives: 3, isPaused: false, isGameOver: true, isPlaying: false
+      });
       fixture.detectChanges();
       const compiled = fixture.nativeElement as HTMLElement;
       const levelDisplay = compiled.querySelector('.level-reached');
@@ -462,7 +487,9 @@ describe('GameOverComponent', () => {
     });
 
     it('should handle large scores (999999)', async () => {
-      component.finalScore = 999999;
+      mockGameStateService.getCurrentState.and.returnValue({
+        score: 999999, level: 1, lives: 3, isPaused: false, isGameOver: true, isPlaying: false
+      });
       fixture.detectChanges();
       await fixture.whenStable();
       const compiled = fixture.nativeElement as HTMLElement;
@@ -479,7 +506,9 @@ describe('GameOverComponent', () => {
     });
 
     it('should handle high level reached (50+)', () => {
-      component.levelReached = 50;
+      mockGameStateService.getCurrentState.and.returnValue({
+        score: 0, level: 50, lives: 3, isPaused: false, isGameOver: true, isPlaying: false
+      });
       fixture.detectChanges();
       const compiled = fixture.nativeElement as HTMLElement;
       const levelDisplay = compiled.querySelector('.level-reached');

@@ -1,9 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { GameConfig, HighScore } from '../models';
+import { GameSettings } from '../models/settings.model';
 import { environment } from '../../../environments/environment';
+import { ErrorHandlerService } from './error-handler.service';
 
 /**
  * ApiService - Handles HTTP communication with the Node.js backend
@@ -39,6 +41,7 @@ import { environment } from '../../../environments/environment';
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   /**
    * Get game configuration
@@ -48,7 +51,7 @@ export class ApiService {
     return this.http.get<GameConfig>(`${this.apiUrl}/config`)
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -61,7 +64,7 @@ export class ApiService {
     return this.http.put<GameConfig>(`${this.apiUrl}/config`, config)
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -75,7 +78,7 @@ export class ApiService {
     return this.http.post<GameConfig>(`${this.apiUrl}/config/${property}`, { value })
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -87,7 +90,7 @@ export class ApiService {
     return this.http.post<GameConfig>(`${this.apiUrl}/config/reset`, {})
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -104,7 +107,7 @@ export class ApiService {
     return this.http.get<HighScore[]>(url)
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -117,7 +120,7 @@ export class ApiService {
     return this.http.post<HighScore>(`${this.apiUrl}/highscores`, score)
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -130,7 +133,7 @@ export class ApiService {
     return this.http.get<HighScore>(`${this.apiUrl}/highscores/${id}`)
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
@@ -143,27 +146,44 @@ export class ApiService {
     return this.http.delete<void>(`${this.apiUrl}/highscores/${id}`)
       .pipe(
         retry(2),
-        catchError(this.handleError)
+        catchError(err => this.errorHandler.handleError(err))
+      );
+  }
+
+  // ── Settings API ────────────────────────────────────────────────────────
+
+  /**
+   * Get player settings from the backend
+   * @returns Observable of GameSettings
+   */
+  getSettings(): Observable<GameSettings> {
+    return this.http.get<GameSettings>(`${this.apiUrl}/settings`)
+      .pipe(
+        retry(2),
+        catchError(err => this.errorHandler.handleError(err))
       );
   }
 
   /**
-   * Handle HTTP errors
-   * @param error HttpErrorResponse
-   * @returns Observable that throws error
+   * Save player settings to the backend
+   * @param settings Settings to save
+   * @returns Observable of saved GameSettings
    */
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An error occurred';
+  saveSettings(settings: GameSettings): Observable<GameSettings> {
+    return this.http.put<GameSettings>(`${this.apiUrl}/settings`, settings)
+      .pipe(
+        catchError(err => this.errorHandler.handleError(err))
+      );
+  }
 
-    if (error.error instanceof ErrorEvent) {
-      // Client-side or network error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Backend error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-    }
-
-    console.error('API Error:', errorMessage);
-    return throwError(() => error);
+  /**
+   * Reset player settings to defaults on the backend
+   * @returns Observable of default GameSettings
+   */
+  resetSettings(): Observable<GameSettings> {
+    return this.http.post<GameSettings>(`${this.apiUrl}/settings/reset`, {})
+      .pipe(
+        catchError(err => this.errorHandler.handleError(err))
+      );
   }
 }

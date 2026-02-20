@@ -115,52 +115,37 @@ describe('HighScoreService', () => {
 
   it('should check if score qualifies against lowest cached score', (done) => {
     apiServiceSpy.getHighScores.and.returnValue(of(mockScores));
-    service.loadHighScores();
-    
-    // Give time for scores to load
-    setTimeout(() => {
-      service.isHighScore(700).subscribe((qualifies: boolean) => {
-        expect(qualifies).toBeTrue();
-        done();
-      });
-    }, 100);
+    service.loadHighScores(); // of() is synchronous — BehaviorSubject is updated immediately
+    service.isHighScore(700).subscribe((qualifies: boolean) => {
+      expect(qualifies).toBeTrue();
+      done();
+    });
   });
 
   it('should return true if cache has less than 100 scores', (done) => {
     apiServiceSpy.getHighScores.and.returnValue(of(mockScores));
     service.loadHighScores();
-    
-    setTimeout(() => {
-      service.isHighScore(100).subscribe((qualifies: boolean) => {
-        expect(qualifies).toBeTrue(); // Only 3 scores, so any score qualifies
-        done();
-      });
-    }, 100);
+    service.isHighScore(100).subscribe((qualifies: boolean) => {
+      expect(qualifies).toBeTrue(); // Only 3 scores, so any score qualifies
+      done();
+    });
   });
 
   it('should return cached scores synchronously with getHighScores', () => {
     apiServiceSpy.getHighScores.and.returnValue(of(mockScores));
-    
     service.loadHighScores();
-    
-    setTimeout(() => {
-      const scores = service.getHighScores();
-      expect(scores).toEqual(mockScores);
-    }, 100);
+    const scores = service.getHighScores();
+    expect(scores).toEqual(mockScores);
   });
 
   it('should handle errors when API calls fail', (done) => {
     const error = new Error('API Error');
     apiServiceSpy.getHighScores.and.returnValue(throwError(() => error));
-    
     service.loadHighScores();
-    
     // Scores should remain empty array on error
-    setTimeout(() => {
-      service.highScores$.subscribe((scores: HighScore[]) => {
-        expect(scores).toEqual([]);
-        done();
-      });
-    }, 100);
+    service.highScores$.subscribe((scores: HighScore[]) => {
+      expect(scores).toEqual([]);
+      done();
+    });
   });
 });

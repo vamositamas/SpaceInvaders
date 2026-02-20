@@ -5,7 +5,9 @@
 
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { EMPTY, of } from 'rxjs';
 import { SettingsService } from './settings.service';
+import { ApiService } from './api.service';
 import { 
   GameSettings, 
   Difficulty, 
@@ -15,6 +17,7 @@ import {
 
 describe('SettingsService', () => {
   let service: SettingsService;
+  let mockApiService: jasmine.SpyObj<Pick<ApiService, 'getSettings' | 'saveSettings' | 'resetSettings'>>;
   const STORAGE_KEY = 'space-invaders-settings';
 
   const mockSettings: GameSettings = {
@@ -29,9 +32,17 @@ describe('SettingsService', () => {
     // Clear localStorage before each test
     localStorage.clear();
 
+    // Default mock: EMPTY so backend sync doesn't affect state
+    mockApiService = {
+      getSettings: jasmine.createSpy('getSettings').and.returnValue(EMPTY),
+      saveSettings: jasmine.createSpy('saveSettings').and.returnValue(EMPTY),
+      resetSettings: jasmine.createSpy('resetSettings').and.returnValue(EMPTY)
+    };
+
     TestBed.configureTestingModule({
       providers: [
         SettingsService,
+        { provide: ApiService, useValue: mockApiService },
         provideZonelessChangeDetection()
       ]
     });
@@ -68,6 +79,7 @@ describe('SettingsService', () => {
       TestBed.configureTestingModule({
         providers: [
           SettingsService,
+          { provide: ApiService, useValue: mockApiService },
           provideZonelessChangeDetection()
         ]
       });
@@ -318,6 +330,7 @@ describe('SettingsService', () => {
       TestBed.configureTestingModule({
         providers: [
           SettingsService,
+          { provide: ApiService, useValue: mockApiService },
           provideZonelessChangeDetection()
         ]
       });
@@ -338,6 +351,7 @@ describe('SettingsService', () => {
       TestBed.configureTestingModule({
         providers: [
           SettingsService,
+          { provide: ApiService, useValue: mockApiService },
           provideZonelessChangeDetection()
         ]
       });
@@ -377,5 +391,81 @@ describe('SettingsService', () => {
       });
     });
   });
-});
 
+  // ============================================================================
+  // Backend Sync Tests
+  // ============================================================================
+
+  describe('Backend Sync', () => {
+    it('should attempt to get settings from backend on init', () => {
+      expect(mockApiService.getSettings).toHaveBeenCalled();
+    });
+
+    it('should update to backend settings when backend responds', (done) => {
+      const backendSettings: GameSettings = {
+        soundEnabled: false,
+        musicEnabled: false,
+        volume: 30,
+        difficulty: Difficulty.EASY,
+        controlScheme: ControlScheme.MOUSE
+      };
+
+      mockApiService.getSettings = jasmine.createSpy('getSettings').and.returnValue(of(backendSettings));
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          SettingsService,
+          { provide: ApiService, useValue: mockApiService },
+          provideZonelessChangeDetection()
+        ]
+      });
+
+      const newService = TestBed.inject(SettingsService);
+
+      newService.settings$.subscribe((settings) => {
+        expect(settings).toEqual(backendSettings);
+        done();
+      });
+    });
+
+    it('should keep localStorage settings when backend is unavailable', (done) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(mockSettings));
+      mockApiService.getSettings = jasmine.createSpy('getSettings').and.returnValue(EMPTY);
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          SettingsService,
+          { provide: ApiService, useValue: mockApiService },
+          provideZonelessChangeDetection()
+        ]
+      });
+
+      const newService = TestBed.inject(SettingsService);
+
+      newService.settings$.subscribe((settings) => {
+        expect(settings).toEqual(mockSettings);
+        done();
+      });
+    });
+
+    it('should call apiService.saveSettings when saveSettings is called', () => {
+      service.setVolume(40);
+      service.saveSettings();
+
+      expect(mockApiService.saveSettings).toHaveBeenCalledWith(
+        jasmine.objectContaining({ volume: 40 })
+      );
+    });
+
+    it('should not throw when backend save fails', () => {
+      mockApiService.saveSettings = jasmine.createSpy('saveSettings').and.returnValue(EMPTY);
+
+      expect(() => {
+        service.setVolume(40);
+        service.saveSettings();
+      }).not.toThrow();
+    });
+  });
+});

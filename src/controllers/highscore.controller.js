@@ -1,4 +1,5 @@
 const HighScoreService = require('../services/highscore.service');
+const ValidationService = require('../services/validation.service');
 
 // Create singleton instance
 const highScoreService = new HighScoreService();
@@ -49,13 +50,28 @@ class HighScoreController {
    */
   async createHighScore(req, res, next) {
     try {
-      const { playerName, score, level, duration } = req.body;
+      const { score, level, duration } = req.body;
+      let { playerName } = req.body;
 
-      // Basic validation for required fields
+      // Check required fields are present
       if (!playerName || score === undefined || level === undefined) {
         return res.status(400).json({
           error: 'Missing required fields: playerName, score, and level are required.',
         });
+      }
+
+      // Sanitize player name (strips XSS / injection chars, trims, truncates)
+      playerName = ValidationService.sanitizePlayerName(playerName);
+
+      if (!playerName) {
+        return res.status(400).json({ error: 'Player name contains no valid characters.' });
+      }
+
+      // Anti-cheat: reject suspiciously high scores or impossible durations
+      try {
+        ValidationService.validateHighScore(score, level, duration);
+      } catch (validationError) {
+        return res.status(400).json({ error: validationError.message });
       }
 
       const scoreData = { playerName, score, level };

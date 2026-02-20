@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { GameContainerComponent } from './game-container.component';
 import { ConfigService } from '../../../core/services/config.service';
 import { GameStateService } from '../../../core/services/game-state.service';
@@ -12,6 +14,8 @@ describe('GameContainerComponent', () => {
   let fixture: ComponentFixture<GameContainerComponent>;
   let configServiceSpy: jasmine.SpyObj<ConfigService>;
   let gameStateServiceSpy: jasmine.SpyObj<GameStateService>;
+  let router: Router;
+  let isGameOverSubject: BehaviorSubject<boolean>;
 
   const mockConfig: GameConfig = {
     canvas: { width: 800, height: 600 },
@@ -25,16 +29,18 @@ describe('GameContainerComponent', () => {
   };
 
   beforeEach(async () => {
+    isGameOverSubject = new BehaviorSubject<boolean>(false);
+
     const configSpy = jasmine.createSpyObj('ConfigService', ['loadConfig'], {
       config$: new BehaviorSubject<GameConfig | null>(mockConfig)
     });
-    
-    const gameStateSpy = jasmine.createSpyObj('GameStateService', ['initGame'], {
+
+    const gameStateSpy = jasmine.createSpyObj('GameStateService', ['initGame', 'resume', 'resetGame'], {
       gameState$: new BehaviorSubject({
         score: 0, lives: 3, level: 1, isPaused: false, isGameOver: false, isPlaying: false
       }),
       isPaused$: new BehaviorSubject<boolean>(false),
-      isGameOver$: new BehaviorSubject<boolean>(false)
+      isGameOver$: isGameOverSubject
     });
 
     const canvasSpy = jasmine.createSpyObj('CanvasService', [
@@ -47,7 +53,8 @@ describe('GameContainerComponent', () => {
         { provide: ConfigService, useValue: configSpy },
         { provide: GameStateService, useValue: gameStateSpy },
         { provide: CanvasService, useValue: canvasSpy },
-        provideZonelessChangeDetection()
+        provideZonelessChangeDetection(),
+        provideRouter([])
       ]
     }).compileComponents();
 
@@ -55,6 +62,7 @@ describe('GameContainerComponent', () => {
     component = fixture.componentInstance;
     configServiceSpy = TestBed.inject(ConfigService) as jasmine.SpyObj<ConfigService>;
     gameStateServiceSpy = TestBed.inject(GameStateService) as jasmine.SpyObj<GameStateService>;
+    router = TestBed.inject(Router);
   });
 
   it('should create', () => {
@@ -66,25 +74,22 @@ describe('GameContainerComponent', () => {
     expect(configServiceSpy.loadConfig).toHaveBeenCalled();
   });
 
-  it('should call initGame when config is loaded', (done) => {
+  it('should navigate to /game-over when isGameOver$ emits true', () => {
+    spyOn(router, 'navigate');
     fixture.detectChanges();
-    
-    setTimeout(() => {
-      expect(gameStateServiceSpy.initGame).toHaveBeenCalledWith(mockConfig);
-      done();
-    }, 10);
+
+    isGameOverSubject.next(true);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/game-over']);
   });
 
-  it('should not init game if config is null', (done) => {
-    (configServiceSpy.config$ as BehaviorSubject<GameConfig | null>).next(null);
-    gameStateServiceSpy.initGame.calls.reset();
-    
+  it('should not navigate when isGameOver$ emits false', () => {
+    spyOn(router, 'navigate');
     fixture.detectChanges();
-    
-    setTimeout(() => {
-      expect(gameStateServiceSpy.initGame).not.toHaveBeenCalled();
-      done();
-    }, 10);
+
+    isGameOverSubject.next(false);
+
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it('should contain game-board component', () => {
@@ -123,7 +128,20 @@ describe('GameContainerComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
     const container = compiled.querySelector('.game-container');
-    
     expect(container).toBeTruthy();
+  });
+
+  it('should contain canvas-wrapper element', () => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+    const wrapper = compiled.querySelector('.canvas-wrapper');
+    expect(wrapper).toBeTruthy();
+  });
+
+  it('should contain pause-overlay component', () => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+    const overlay = compiled.querySelector('app-pause-overlay');
+    expect(overlay).toBeTruthy();
   });
 });

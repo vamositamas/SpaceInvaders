@@ -19,11 +19,15 @@
   padding: 16px;
 }
 
+.canvas-wrapper {
+  position: relative;
+}
+
 @media (max-width: 768px) {
   .game-container {
     padding: 8px;
   }
-  
+
   .game-content {
     padding: 8px;
   }

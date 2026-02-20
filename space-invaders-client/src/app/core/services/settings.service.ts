@@ -1,10 +1,11 @@
 /**
  * SettingsService
- * Manages game settings with localStorage persistence
+ * Manages game settings with localStorage persistence and backend sync
  */
 
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, EMPTY, Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import {
   GameSettings,
   Difficulty,
@@ -13,6 +14,7 @@ import {
   createDefaultSettings,
   validateSettings
 } from '../models/settings.model';
+import { ApiService } from './api.service';
 
 const STORAGE_KEY = 'space-invaders-settings';
 
@@ -44,6 +46,7 @@ const STORAGE_KEY = 'space-invaders-settings';
 })
 export class SettingsService {
   private readonly settingsSubject: BehaviorSubject<GameSettings>;
+  private readonly apiService = inject(ApiService);
   
   /**
    * Observable stream of current settings
@@ -55,6 +58,8 @@ export class SettingsService {
     const initialSettings = this.loadFromStorage();
     this.settingsSubject = new BehaviorSubject<GameSettings>(initialSettings);
     this.settings$ = this.settingsSubject.asObservable();
+    // Sync with backend; update if backend responds, keep localStorage on failure
+    this.syncWithBackend();
   }
 
   // ============================================================================
@@ -135,7 +140,7 @@ export class SettingsService {
   // ============================================================================
 
   /**
-   * Save current settings to localStorage
+   * Save current settings to localStorage and sync to backend
    */
   saveSettings(): void {
     const current = this.settingsSubject.value;
@@ -144,6 +149,10 @@ export class SettingsService {
     } catch (error) {
       console.error('Error saving settings to localStorage:', error);
     }
+    // Sync to backend (fire-and-forget; failure is non-critical)
+    this.apiService.saveSettings(current).pipe(
+      catchError(() => EMPTY)
+    ).subscribe();
   }
 
   /**
@@ -198,6 +207,18 @@ export class SettingsService {
    */
   private updateSettings(settings: GameSettings): void {
     this.settingsSubject.next(settings);
+  }
+
+  /**
+   * Sync settings from backend. Updates state if backend responds;
+   * silently keeps current settings if backend is unavailable.
+   */
+  private syncWithBackend(): void {
+    this.apiService.getSettings().pipe(
+      catchError(() => EMPTY)
+    ).subscribe(backendSettings => {
+      this.updateSettings(backendSettings);
+    });
   }
 
   /**

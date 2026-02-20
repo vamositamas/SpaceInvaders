@@ -88,7 +88,9 @@ export class GameOverComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Check if score qualifies as high score
+    const state = this.gameStateService.getCurrentState();
+    this.finalScore = state.score;
+    this.levelReached = state.level;
     this.isHighScore = this.highScoreService.checkIfHighScore(this.finalScore);
   }
 

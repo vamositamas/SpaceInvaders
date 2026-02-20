@@ -1,8 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApiService } from './api.service';
+import { IS_PRODUCTION } from './error-handler.service';
 import { GameConfig, HighScore } from '../models';
+import { GameSettings, Difficulty, ControlScheme } from '../models/settings.model';
 
 describe('ApiService', () => {
   let service: ApiService;
@@ -14,7 +17,9 @@ describe('ApiService', () => {
       imports: [HttpClientTestingModule],
       providers: [
         ApiService,
-        provideZonelessChangeDetection()
+        provideZonelessChangeDetection(),
+        { provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open']) },
+        { provide: IS_PRODUCTION, useValue: false },
       ]
     });
     service = TestBed.inject(ApiService);
@@ -203,6 +208,66 @@ describe('ApiService', () => {
       for (let i = 0; i < 3; i++) {
         const req = httpMock.expectOne(`${apiUrl}/highscores`);
         req.flush('Not found', { status: 404, statusText: 'Not Found' });
+      }
+    });
+  });
+
+  describe('Settings API', () => {
+    const mockSettings: GameSettings = {
+      soundEnabled: true,
+      musicEnabled: true,
+      volume: 75,
+      difficulty: Difficulty.NORMAL,
+      controlScheme: ControlScheme.KEYBOARD
+    };
+
+    it('should get settings', (done) => {
+      service.getSettings().subscribe((settings) => {
+        expect(settings).toEqual(mockSettings);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/settings`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockSettings);
+    });
+
+    it('should save settings', (done) => {
+      service.saveSettings(mockSettings).subscribe((settings) => {
+        expect(settings).toEqual(mockSettings);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/settings`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(mockSettings);
+      req.flush(mockSettings);
+    });
+
+    it('should reset settings', (done) => {
+      service.resetSettings().subscribe((settings) => {
+        expect(settings).toEqual(mockSettings);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/settings/reset`);
+      expect(req.request.method).toBe('POST');
+      req.flush(mockSettings);
+    });
+
+    it('should handle settings error', (done) => {
+      service.getSettings().subscribe({
+        next: () => fail('should have failed'),
+        error: (error: any) => {
+          expect(error.status).toBe(500);
+          done();
+        }
+      });
+
+      // Respond to all retry attempts (initial + 2 retries = 3 total)
+      for (let i = 0; i < 3; i++) {
+        const req = httpMock.expectOne(`${apiUrl}/settings`);
+        req.flush('Server error', { status: 500, statusText: 'Server Error' });
       }
     });
   });

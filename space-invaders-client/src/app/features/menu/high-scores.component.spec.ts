@@ -3,6 +3,8 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
@@ -18,6 +20,7 @@ describe('HighScoresComponent', () => {
   let fixture: ComponentFixture<HighScoresComponent>;
   let mockHighScoreService: jasmine.SpyObj<HighScoreService>;
   let highScoresSubject: BehaviorSubject<HighScore[]>;
+  let router: Router;
 
   const mockHighScores: HighScore[] = [
     {
@@ -85,12 +88,14 @@ describe('HighScoresComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideNoopAnimations(),
+        provideRouter([]),
         { provide: HighScoreService, useValue: mockHighScoreService }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(HighScoresComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
   });
 
   // ============================================================================
@@ -100,6 +105,12 @@ describe('HighScoresComponent', () => {
   describe('Component Initialization', () => {
     it('should create the component', () => {
       expect(component).toBeTruthy();
+    });
+
+    it('should navigate to / when goBack is called', () => {
+      spyOn(router, 'navigate');
+      component.goBack();
+      expect(router.navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('should load high scores on init', () => {

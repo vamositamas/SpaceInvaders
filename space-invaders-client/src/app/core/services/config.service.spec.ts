@@ -119,14 +119,9 @@ describe('ConfigService', () => {
 
   it('should return cached config synchronously with getConfig', () => {
     apiServiceSpy.getConfig.and.returnValue(of(mockConfig));
-    
-    service.loadConfig();
-    
-    // Give time for async operation
-    setTimeout(() => {
-      const config = service.getConfig();
-      expect(config).toEqual(mockConfig);
-    }, 100);
+    service.loadConfig(); // of() is synchronous — BehaviorSubject is updated immediately
+    const config = service.getConfig();
+    expect(config).toEqual(mockConfig);
   });
 
   it('should handle errors when API calls fail', (done) => {

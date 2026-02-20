@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -37,8 +38,9 @@ import { HighScore } from '../../core/models/high-score.interface';
   templateUrl: './high-scores.component.html',
   styleUrl: './high-scores.component.scss'
 })
-export class HighScoresComponent implements OnInit {
+export class HighScoresComponent implements OnInit, AfterViewInit {
   private readonly highScoreService = inject(HighScoreService);
+  private readonly router = inject(Router);
 
   // Table configuration
   displayedColumns: string[] = ['rank', 'playerName', 'score', 'level', 'date'];
@@ -69,6 +71,13 @@ export class HighScoresComponent implements OnInit {
     if (this.sort) {
       this.dataSource.sort = this.sort;
     }
+  }
+
+  /**
+   * Navigate back to the main menu
+   */
+  goBack(): void {
+    this.router.navigate(['/']);
   }
 
   /**

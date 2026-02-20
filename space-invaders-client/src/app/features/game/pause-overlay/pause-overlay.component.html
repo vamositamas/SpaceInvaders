@@ -1,0 +1,28 @@
+<div class="pause-overlay" *ngIf="isPaused" role="dialog" aria-modal="true" aria-label="Game paused">
+  <div class="pause-panel">
+    <h2 class="pause-title">PAUSED</h2>
+
+    <p class="pause-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to resume</p>
+
+    <div class="pause-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        class="resume-btn"
+        (click)="resume()"
+        aria-label="Resume game">
+        <mat-icon>play_arrow</mat-icon>
+        Resume
+      </button>
+
+      <button
+        mat-stroked-button
+        class="menu-btn"
+        (click)="returnToMenu()"
+        aria-label="Return to main menu">
+        <mat-icon>home</mat-icon>
+        Main Menu
+      </button>
+    </div>
+  </div>
+</div>

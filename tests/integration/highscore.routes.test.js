@@ -1,14 +1,18 @@
 const request = require('supertest');
 const app = require('../../server');
 const HighScoreService = require('../../src/services/highscore.service');
+const highscoreRoutes = require('../../src/routes/highscore.routes');
 
 // Create service instance for test cleanup
 const highScoreService = new HighScoreService();
+const { scoreRateLimiter } = highscoreRoutes;
 
 describe('HighScore API Routes', () => {
   beforeEach(async () => {
-    // Clear high scores before each test
+    // Clear high scores and reset rate limiter state before each test
     await highScoreService.clearAllScores();
+    scoreRateLimiter.configure({ max: 1000 }); // effectively disable during general tests
+    scoreRateLimiter.resetStore();
   });
 
   describe('GET /api/highscores', () => {
@@ -158,20 +162,20 @@ describe('HighScore API Routes', () => {
       expect(response.body).toHaveProperty('error');
     });
 
-    test('should return 400 for player name exceeding max length', async () => {
-      const invalidScore = {
-        playerName: 'A'.repeat(21), // 21 characters, max is 20
+    test('should truncate player name exceeding max length and return 201', async () => {
+      const scoreWithLongName = {
+        playerName: 'A'.repeat(25), // 25 chars — sanitizer truncates to 20
         score: 1000,
         level: 5,
       };
 
       const response = await request(app)
         .post('/api/highscores')
-        .send(invalidScore)
+        .send(scoreWithLongName)
         .set('Content-Type', 'application/json');
 
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(response.status).toBe(201);
+      expect(response.body.playerName.length).toBeLessThanOrEqual(20);
     });
 
     test('should return 400 for invalid level', async () => {
@@ -248,6 +252,97 @@ describe('HighScore API Routes', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  describe('Anti-Cheat Validation', () => {
+    test('should reject score exceeding level maximum', async () => {
+      const response = await request(app)
+        .post('/api/highscores')
+        .send({ playerName: 'Cheater', score: 999999, level: 1 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should accept realistic score for level', async () => {
+      const response = await request(app)
+        .post('/api/highscores')
+        .send({ playerName: 'Honest', score: 3000, level: 1 });
+
+      expect(response.status).toBe(201);
+    });
+
+    test('should reject duration that is impossibly short for level', async () => {
+      const response = await request(app)
+        .post('/api/highscores')
+        .send({ playerName: 'Speed', score: 100, level: 3, duration: 5 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should accept realistic duration for level', async () => {
+      const response = await request(app)
+        .post('/api/highscores')
+        .send({ playerName: 'Normal', score: 100, level: 1, duration: 60 });
+
+      expect(response.status).toBe(201);
+    });
+
+    test('should sanitize XSS in player name and save clean version', async () => {
+      const response = await request(app)
+        .post('/api/highscores')
+        .send({ playerName: '<script>alert(1)</script>', score: 100, level: 1 });
+
+      // Name has valid chars after stripping tags (e.g. "scriptalert1script")
+      expect(response.status).toBe(201);
+      expect(response.body.playerName).not.toContain('<');
+      expect(response.body.playerName).not.toContain('>');
+    });
+
+    test('should return 400 when name is entirely invalid characters', async () => {
+      const response = await request(app)
+        .post('/api/highscores')
+        .send({ playerName: '<<>>!!@@', score: 100, level: 1 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  describe('Rate Limiting', () => {
+    beforeEach(() => {
+      // Use a tight limit so we can trigger it quickly
+      scoreRateLimiter.configure({ max: 2 });
+      scoreRateLimiter.resetStore();
+    });
+
+    afterEach(() => {
+      // Restore to production default
+      scoreRateLimiter.configure({ max: 1000 });
+      scoreRateLimiter.resetStore();
+    });
+
+    test('should block submissions after rate limit is exceeded', async () => {
+      const validScore = { playerName: 'RateTest', score: 100, level: 1 };
+
+      await request(app).post('/api/highscores').send(validScore);
+      await request(app).post('/api/highscores').send(validScore);
+      const blocked = await request(app).post('/api/highscores').send(validScore);
+
+      expect(blocked.status).toBe(429);
+      expect(blocked.body).toHaveProperty('error');
+    });
+
+    test('should allow requests that are within the limit', async () => {
+      const validScore = { playerName: 'RateOK', score: 100, level: 1 };
+
+      const r1 = await request(app).post('/api/highscores').send(validScore);
+      const r2 = await request(app).post('/api/highscores').send(validScore);
+
+      expect(r1.status).toBe(201);
+      expect(r2.status).toBe(201);
     });
   });
 
