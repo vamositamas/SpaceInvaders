@@ -30,6 +30,7 @@ A modern full-stack recreation of the classic **Space Invaders** arcade game, fe
 *   **API Rate Limiting (`express-rate-limit`):** Configured rate limiter protecting `/api/` endpoints by restricting any single IP address to a maximum of **100 requests per 15-minute window**.
 *   **CORS Configuration:** Restricts cross-origin resource sharing to designated origins specified via environment variables.
 *   **Interactive Swagger Documentation:** Self-documenting REST API with a built-in interactive Swagger interface served at `http://localhost:3000/api/docs`.
+TT
 
 ---
 
