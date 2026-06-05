@@ -1,0 +1,11 @@
+node_modules
+.angular
+coverage
+.vscode
+*.log
+.DS_Store
+e2e
+test-results
+playwright-report
+*.spec.ts
+karma.conf.js

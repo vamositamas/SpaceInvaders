@@ -1,7 +1,8 @@
 /**
  * Production environment configuration
+ * Set BACKEND_URL environment variable in Vercel to your backend API URL
  */
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000/api'  // Backend API URL for production
+  apiUrl: 'https://YOUR_BACKEND_DOMAIN.vercel.app/api'  // Replace with your backend URL
 };
