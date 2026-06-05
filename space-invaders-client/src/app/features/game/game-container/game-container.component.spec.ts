@@ -6,6 +6,8 @@ import { GameContainerComponent } from './game-container.component';
 import { ConfigService } from '../../../core/services/config.service';
 import { GameStateService } from '../../../core/services/game-state.service';
 import { CanvasService } from '../../../core/services/canvas.service';
+import { AudioService } from '../../../core/services/audio.service';
+import { ParticleService } from '../../../core/services/particle.service';
 import { BehaviorSubject } from 'rxjs';
 import { GameConfig } from '../../../core/models';
 
@@ -35,17 +37,30 @@ describe('GameContainerComponent', () => {
       config$: new BehaviorSubject<GameConfig | null>(mockConfig)
     });
 
-    const gameStateSpy = jasmine.createSpyObj('GameStateService', ['initGame', 'resume', 'resetGame'], {
+    const gameStateSpy = jasmine.createSpyObj('GameStateService', [
+      'initGame', 'resume', 'resetGame', 'isRapidFireEnabled', 'toggleRapidFire'
+    ], {
       gameState$: new BehaviorSubject({
         score: 0, lives: 3, level: 1, isPaused: false, isGameOver: false, isPlaying: false
       }),
       isPaused$: new BehaviorSubject<boolean>(false),
-      isGameOver$: isGameOverSubject
+      isGameOver$: isGameOverSubject,
+      rapidFire$: new BehaviorSubject<boolean>(false)
     });
+    gameStateSpy.isRapidFireEnabled.and.returnValue(false);
 
     const canvasSpy = jasmine.createSpyObj('CanvasService', [
-      'initCanvas', 'clearCanvas', 'drawRect', 'getContext'
+      'initCanvas', 'clearCanvas', 'drawRect', 'drawText', 'getContext'
     ]);
+
+    const audioSpy = jasmine.createSpyObj('AudioService', [
+      'playShoot', 'playExplosion', 'playHit', 'playLevelUp', 'playGameOver'
+    ]);
+
+    const particleSpy = jasmine.createSpyObj('ParticleService', [
+      'update', 'spawnExplosion', 'clear', 'getParticles'
+    ]);
+    particleSpy.getParticles.and.returnValue([]);
 
     await TestBed.configureTestingModule({
       imports: [GameContainerComponent],
@@ -53,6 +68,8 @@ describe('GameContainerComponent', () => {
         { provide: ConfigService, useValue: configSpy },
         { provide: GameStateService, useValue: gameStateSpy },
         { provide: CanvasService, useValue: canvasSpy },
+        { provide: AudioService, useValue: audioSpy },
+        { provide: ParticleService, useValue: particleSpy },
         provideZonelessChangeDetection(),
         provideRouter([])
       ]

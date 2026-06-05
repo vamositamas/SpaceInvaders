@@ -15,6 +15,8 @@ import { LevelService } from '../../../core/services/level.service';
 import { ShieldService } from '../../../core/services/shield.service';
 import { ScoreService } from '../../../core/services/score.service';
 import { MysteryShipService } from '../../../core/services/mystery-ship.service';
+import { AudioService } from '../../../core/services/audio.service';
+import { ParticleService } from '../../../core/services/particle.service';
 import { BehaviorSubject } from 'rxjs';
 import { GameConfig } from '../../../core/models';
 
@@ -53,7 +55,7 @@ describe('GameBoardComponent', () => {
 
     const gameStateSpy = jasmine.createSpyObj('GameStateService', [
       'initGame', 'updateScore', 'setLives', 'setLevel', 'gameOver',
-      'pause', 'resume', 'getCurrentState'
+      'pause', 'resume', 'getCurrentState', 'isRapidFireEnabled'
     ], {
       isPaused$: new BehaviorSubject<boolean>(false),
       isGameOver$: new BehaviorSubject<boolean>(false)
@@ -62,6 +64,7 @@ describe('GameBoardComponent', () => {
       score: 0, lives: 3, level: 1,
       isPaused: false, isGameOver: false, isPlaying: true
     });
+    gameStateSpy.isRapidFireEnabled.and.returnValue(false);
 
     const inputSpy = jasmine.createSpyObj('InputHandlerService', [
       'initialize', 'cleanup', 'isKeyPressed', 'isMouseButtonPressed', 'getMousePosition'
@@ -119,6 +122,15 @@ describe('GameBoardComponent', () => {
     ]);
     mysteryShipSpy.getShip.and.returnValue({ isActive: false, x: 0, y: 30, width: 50, height: 20, pointValue: 0 });
 
+    const audioSpy = jasmine.createSpyObj('AudioService', [
+      'playShoot', 'playExplosion', 'playHit', 'playLevelUp', 'playGameOver'
+    ]);
+
+    const particleSpy = jasmine.createSpyObj('ParticleService', [
+      'update', 'spawnExplosion', 'clear', 'getParticles'
+    ]);
+    particleSpy.getParticles.and.returnValue([]);
+
     await TestBed.configureTestingModule({
       imports: [GameBoardComponent],
       providers: [
@@ -136,6 +148,8 @@ describe('GameBoardComponent', () => {
         { provide: ShieldService, useValue: shieldSpy },
         { provide: ScoreService, useValue: scoreSpy },
         { provide: MysteryShipService, useValue: mysteryShipSpy },
+        { provide: AudioService, useValue: audioSpy },
+        { provide: ParticleService, useValue: particleSpy },
         provideZonelessChangeDetection()
       ]
     }).compileComponents();

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +21,7 @@ import { GameStateService } from '../../../core/services/game-state.service';
 })
 export class PauseOverlayComponent implements OnInit, OnDestroy {
   isPaused = false;
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly destroy$ = new Subject<void>();
 
@@ -32,7 +33,10 @@ export class PauseOverlayComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.gameStateService.isPaused$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(paused => { this.isPaused = paused; });
+      .subscribe(paused => {
+        this.isPaused = paused;
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {

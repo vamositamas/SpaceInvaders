@@ -9,6 +9,7 @@ import { Subject, takeUntil, skip } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { SettingsDialogComponent } from './settings-dialog.component';
 import { InstructionsDialogComponent } from './instructions-dialog.component';
+import { AboutDialogComponent } from './about-dialog.component';
 
 /**
  * Main Menu Component
@@ -117,6 +118,19 @@ export class MainMenuComponent implements OnInit, OnDestroy {
   openInstructions(): void {
     this.dialog.open(InstructionsDialogComponent, {
       width: '800px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      disableClose: false,
+      autoFocus: true
+    });
+  }
+
+  /**
+   * Open about dialog
+   */
+  openAbout(): void {
+    this.dialog.open(AboutDialogComponent, {
+      width: '600px',
       maxWidth: '90vw',
       maxHeight: '90vh',
       disableClose: false,

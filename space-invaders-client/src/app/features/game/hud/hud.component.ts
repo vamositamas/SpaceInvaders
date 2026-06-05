@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,6 +32,7 @@ export class HudComponent implements OnInit, OnDestroy {
   readonly rapidFireEnabled = signal(false);
 
   private destroy$ = new Subject<void>();
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor(private gameStateService: GameStateService) {}
 
@@ -40,6 +41,7 @@ export class HudComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
         this.gameState = state;
+        this.cdr.markForCheck();
       });
 
     this.gameStateService.rapidFire$

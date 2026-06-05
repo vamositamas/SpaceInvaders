@@ -5,8 +5,23 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  box-sizing: border-box;
+  background: radial-gradient(circle at center, #161129 0%, #060312 100%);
   color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle Scanline / Grid overlay for retro arcade feel
+  &::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+    z-index: 10;
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+  }
 }
 
 // Loading State
@@ -14,11 +29,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  z-index: 20;
+
+  mat-spinner {
+    ::ng-deep circle {
+      stroke: #00f2fe !important;
+    }
+  }
 
   p {
     font-size: 1.2rem;
-    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    color: #00f2fe;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+    animation: blinkText 1.5s infinite ease-in-out;
   }
 }
 
@@ -26,19 +52,43 @@
 .error-message {
   max-width: 500px;
   width: 100%;
+  z-index: 20;
 
   .error-card {
-    background-color: rgba(211, 47, 47, 0.1);
-    border: 2px solid #d32f2f;
+    background-color: rgba(255, 46, 99, 0.1) !important;
+    border: 1px solid rgba(255, 46, 99, 0.4) !important;
+    box-shadow: 0 0 20px rgba(255, 46, 99, 0.2) !important;
+    border-radius: 12px;
 
     h2 {
-      color: #ff5252;
+      color: #ff2e63;
+      font-family: 'Orbitron', sans-serif;
       margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(255, 46, 99, 0.4);
     }
 
     p {
       margin-bottom: 1.5rem;
-      color: #fff;
+      color: #e2dff0;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    button {
+      background: linear-gradient(135deg, #ff2e63 0%, #ff527b 100%) !important;
+      color: #fff !important;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 600;
+      letter-spacing: 1px;
+      border: none;
+      box-shadow: 0 0 15px rgba(255, 46, 99, 0.4);
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(255, 46, 99, 0.7);
+      }
     }
   }
 }
@@ -51,32 +101,40 @@
   width: 100%;
   max-width: 500px;
   animation: fadeIn 0.5s ease-in;
+  z-index: 20;
 }
 
 // Game Header
 .game-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   animation: slideDown 0.6s ease-out;
 
   .game-title {
-    font-size: 3rem;
-    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 900;
     margin: 0;
+    line-height: 1.2;
     text-shadow: 
-      0 0 10px rgba(76, 175, 80, 0.5),
-      0 0 20px rgba(76, 175, 80, 0.3),
-      0 0 30px rgba(76, 175, 80, 0.2);
-    letter-spacing: 0.1em;
-    color: #4caf50;
+      0 0 10px #39ff14,
+      0 0 20px rgba(57, 255, 20, 0.5),
+      0 0 30px rgba(57, 255, 20, 0.3);
+    letter-spacing: 6px;
+    color: #39ff14;
+    white-space: nowrap;
+    animation: neonGreenPulse 2s infinite alternate;
   }
 
   .game-subtitle {
-    font-size: 1rem;
-    margin-top: 0.5rem;
-    opacity: 0.8;
-    letter-spacing: 0.2em;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    margin-top: 0.8rem;
+    color: #ffd700;
+    letter-spacing: 4px;
     text-transform: uppercase;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
   }
 }
 
@@ -84,25 +142,89 @@
 .menu-nav {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   width: 100%;
   margin-bottom: 2rem;
 
   .menu-button {
     width: 100%;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    transition: all 0.3s ease;
+    height: 56px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border-radius: 12px;
+    background: rgba(15, 9, 32, 0.8) !important;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(-4px) scale(1.02);
     }
 
     &:active {
-      transform: translateY(0);
+      transform: translateY(-1px);
+    }
+
+    // Custom coloring per button type
+    &.mat-primary { // START GAME
+      border: 1px solid rgba(57, 255, 20, 0.35) !important;
+      color: #39ff14 !important;
+      box-shadow: 0 0 15px rgba(57, 255, 20, 0.15);
+
+      &:hover {
+        border-color: #39ff14 !important;
+        box-shadow: 
+          0 0 25px rgba(57, 255, 20, 0.5),
+          inset 0 0 10px rgba(57, 255, 20, 0.2);
+        background-color: rgba(57, 255, 20, 0.05) !important;
+      }
+    }
+
+    &.mat-accent { // HIGH SCORES
+      border: 1px solid rgba(243, 85, 218, 0.35) !important;
+      color: #f355da !important;
+      box-shadow: 0 0 15px rgba(243, 85, 218, 0.15);
+
+      &:hover {
+        border-color: #f355da !important;
+        box-shadow: 
+          0 0 25px rgba(243, 85, 218, 0.5),
+          inset 0 0 10px rgba(243, 85, 218, 0.2);
+        background-color: rgba(243, 85, 218, 0.05) !important;
+      }
+    }
+
+    // Non-themed standard Material buttons (Settings / Instructions)
+    &:not(.mat-primary):not(.mat-accent) {
+      &:nth-of-type(3) { // SETTINGS
+        border: 1px solid rgba(255, 167, 38, 0.35) !important;
+        color: #ffa726 !important;
+        box-shadow: 0 0 15px rgba(255, 167, 38, 0.15);
+
+        &:hover {
+          border-color: #ffa726 !important;
+          box-shadow: 
+            0 0 25px rgba(255, 167, 38, 0.5),
+            inset 0 0 10px rgba(255, 167, 38, 0.2);
+          background-color: rgba(255, 167, 38, 0.05) !important;
+        }
+      }
+
+      &:nth-of-type(4) { // INSTRUCTIONS
+        border: 1px solid rgba(0, 242, 254, 0.35) !important;
+        color: #00f2fe !important;
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+
+        &:hover {
+          border-color: #00f2fe !important;
+          box-shadow: 
+            0 0 25px rgba(0, 242, 254, 0.5),
+            inset 0 0 10px rgba(0, 242, 254, 0.2);
+          background-color: rgba(0, 242, 254, 0.05) !important;
+        }
+      }
     }
   }
 }
@@ -110,23 +232,22 @@
 // Footer
 .menu-footer {
   text-align: center;
-  margin-top: 2rem;
-  opacity: 0.6;
+  margin-top: 3rem;
+  opacity: 0.5;
 
   .copyright {
-    font-size: 0.875rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: #8f8ba3;
     margin: 0;
   }
 }
 
 // Animations
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideDown {
@@ -140,40 +261,50 @@
   }
 }
 
-// Responsive Design
-@media (max-width: 600px) {
-  .menu-container {
-    padding: 1rem;
+@keyframes blinkText {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes neonGreenPulse {
+  from {
+    text-shadow: 
+      0 0 8px #39ff14,
+      0 0 18px rgba(57, 255, 20, 0.6);
   }
-
-  .game-header {
-    .game-title {
-      font-size: 2rem;
-    }
-
-    .game-subtitle {
-      font-size: 0.875rem;
-    }
-  }
-
-  .menu-nav {
-    .menu-button {
-      font-size: 1rem;
-      padding: 0.875rem 1.5rem;
-    }
+  to {
+    text-shadow: 
+      0 0 12px #39ff14,
+      0 0 25px rgba(57, 255, 20, 0.8),
+      0 0 35px rgba(57, 255, 20, 0.4);
   }
 }
 
-@media (min-width: 960px) {
+// Responsive Design
+@media (max-width: 600px) {
+  .menu-container {
+    padding: 1.5rem;
+  }
+
   .game-header {
+    margin-bottom: 2.5rem;
+
     .game-title {
-      font-size: 4rem;
+      font-size: 2.2rem;
+      letter-spacing: 3px;
+    }
+
+    .game-subtitle {
+      font-size: 0.85rem;
+      letter-spacing: 2px;
     }
   }
 
   .menu-nav {
+    gap: 1rem;
     .menu-button {
-      font-size: 1.25rem;
+      font-size: 1rem;
+      height: 48px;
     }
   }
 }

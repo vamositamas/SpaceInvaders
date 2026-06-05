@@ -1,0 +1,64 @@
+<h2 mat-dialog-title>
+  <mat-icon>info</mat-icon>
+  About the Project
+</h2>
+
+<mat-dialog-content class="about-content">
+  <div class="pixel-decor-container">
+    <div class="pixel-alien animate-bounce">👾</div>
+  </div>
+
+  <p class="description">
+    <strong>Space Invaders Cyber-Retro</strong> is a full-stack modern reimagining of the legendary 1978 classic. This project combines the authentic feel of retro arcade gameplay with modern high-performance web standards.
+  </p>
+
+  <p class="details">
+    Featuring a sleek glassmorphic neon design, it showcases high-performance <strong>Angular 20</strong> zoneless rendering, dynamic vector particle explosions, circular coordinate-based shield bunker erosion, and sound effects synthesized entirely in real-time via the <strong>Web Audio API</strong>.
+  </p>
+
+  <div class="tech-grid">
+    <div class="tech-item">
+      <mat-icon>code</mat-icon>
+      <div>
+        <h4>Frontend</h4>
+        <p>Angular 20, RxJS, HTML5 Canvas</p>
+      </div>
+    </div>
+    <div class="tech-item">
+      <mat-icon>security</mat-icon>
+      <div>
+        <h4>Backend</h4>
+        <p>Node.js, Express, Helmet, Rate Limit</p>
+      </div>
+    </div>
+    <div class="tech-item">
+      <mat-icon>volume_up</mat-icon>
+      <div>
+        <h4>Audio Synthesis</h4>
+        <p>Web Audio API Synthesizer (Oscillators)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="developers-panel">
+    <h3>DEVELOPED BY</h3>
+    <div class="names-container">
+      <div class="developer-card">
+        <mat-icon>person</mat-icon>
+        <span>Olle Zsanna</span>
+      </div>
+      <div class="dev-divider">&</div>
+      <div class="developer-card">
+        <mat-icon>person</mat-icon>
+        <span>Tamas Vamosi</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button class="glow-button" (click)="close()" cdkFocusInitial>
+    <mat-icon>check</mat-icon>
+    DISMISS
+  </button>
+</mat-dialog-actions>

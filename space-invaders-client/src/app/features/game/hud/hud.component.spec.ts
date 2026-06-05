@@ -20,8 +20,9 @@ describe('HudComponent', () => {
   };
 
   beforeEach(async () => {
-    const gameStateSpy = jasmine.createSpyObj('GameStateService', [], {
-      gameState$: new BehaviorSubject<LegacyGameState>(mockGameState)
+    const gameStateSpy = jasmine.createSpyObj('GameStateService', ['toggleRapidFire'], {
+      gameState$: new BehaviorSubject<LegacyGameState>(mockGameState),
+      rapidFire$: new BehaviorSubject<boolean>(false)
     });
 
     await TestBed.configureTestingModule({

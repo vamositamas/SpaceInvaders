@@ -17,13 +17,17 @@ describe('MainMenuComponent', () => {
   beforeEach(async () => {
     // Create mocks
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    
+    const configSubject = new BehaviorSubject<any>(null);
     mockConfigService = jasmine.createSpyObj('ConfigService', ['loadConfig'], {
-      config$: of({
-        playerSpeed: 300,
-        enemySpeed: 50,
-        projectileSpeed: 500,
-        fireRate: 500
-      })
+      config$: configSubject.asObservable()
+    });
+    mockConfigService.loadConfig.and.callFake(() => {
+      configSubject.next({
+        canvas: { width: 800, height: 600 },
+        player: { speed: 5, fireRate: 500, lives: 3 },
+        enemies: { rows: 5, columns: 11, baseSpeed: 1, speedIncrement: 0.1, fireRate: 2000 }
+      });
     });
 
     await TestBed.configureTestingModule({
@@ -59,13 +63,14 @@ describe('MainMenuComponent', () => {
       fixture.detectChanges();
       const compiled = fixture.nativeElement as HTMLElement;
       const buttons = compiled.querySelectorAll('button');
-      expect(buttons.length).toBe(4);
+      expect(buttons.length).toBe(5);
       
       const buttonTexts = Array.from(buttons).map(btn => btn.textContent?.trim());
       expect(buttonTexts).toContain('START GAME');
       expect(buttonTexts).toContain('HIGH SCORES');
       expect(buttonTexts).toContain('SETTINGS');
       expect(buttonTexts).toContain('INSTRUCTIONS');
+      expect(buttonTexts).toContain('ABOUT');
     });
   });
 
@@ -102,6 +107,11 @@ describe('MainMenuComponent', () => {
 
     it('should open instructions dialog when Instructions clicked', () => {
       component.openInstructions();
+      expect((component as any).dialog.open).toHaveBeenCalled();
+    });
+
+    it('should open about dialog when About clicked', () => {
+      component.openAbout();
       expect((component as any).dialog.open).toHaveBeenCalled();
     });
   });
@@ -152,19 +162,19 @@ describe('MainMenuComponent', () => {
       // Verify component state directly since *ngIf rendering is tested in Template tests
       const configSubject = new BehaviorSubject<any>(null);
       // Reconfigure TestBed with a config that doesn't resolve immediately
-      component['isLoading'] = true;
-      expect(component.isLoading).toBe(true);
+      component.isLoading.set(true);
+      expect(component.isLoading()).toBe(true);
     });
 
     it('should handle configuration load errors gracefully', () => {
       fixture.detectChanges(); // Trigger ngOnInit first
       // Manually simulate what happens when config loading fails
-      component.hasError = true;
-      component.isLoading = false;
+      component.hasError.set(true);
+      component.isLoading.set(false);
       fixture.componentRef.changeDetectorRef.markForCheck();
       fixture.detectChanges();
 
-      expect(component.hasError).toBe(true);
+      expect(component.hasError()).toBe(true);
       const compiled = fixture.nativeElement as HTMLElement;
       const errorMessage = compiled.querySelector('.error-message');
       expect(errorMessage).toBeTruthy();

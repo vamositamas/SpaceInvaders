@@ -35,7 +35,6 @@
             matInput
             formControlName="playerName"
             placeholder="Enter your name (1-20 characters)"
-            [disabled]="isSubmitting"
             maxlength="20"
           />
           @if (form.get('playerName')?.hasError('required')) {

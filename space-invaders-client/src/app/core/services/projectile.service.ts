@@ -30,28 +30,53 @@ export class ProjectileService {
   private playerProjectiles: Projectile[] = [];
   private enemyProjectiles: Projectile[] = [];
 
+  private freePlayerProjectiles: Projectile[] = [];
+  private freeEnemyProjectiles: Projectile[] = [];
+
   /** Fire a new player projectile originating at (x, y). */
   addPlayerProjectile(x: number, y: number): void {
-    this.playerProjectiles.push({
-      x,
-      y,
-      width: ProjectileService.PROJECTILE_WIDTH,
-      height: ProjectileService.PROJECTILE_HEIGHT,
-      vy: -ProjectileService.PLAYER_PROJECTILE_SPEED,
-      isActive: true
-    });
+    if (this.freePlayerProjectiles.length > 0) {
+      const p = this.freePlayerProjectiles.pop()!;
+      p.x = x;
+      p.y = y;
+      p.width = ProjectileService.PROJECTILE_WIDTH;
+      p.height = ProjectileService.PROJECTILE_HEIGHT;
+      p.vy = -ProjectileService.PLAYER_PROJECTILE_SPEED;
+      p.isActive = true;
+      this.playerProjectiles.push(p);
+    } else {
+      this.playerProjectiles.push({
+        x,
+        y,
+        width: ProjectileService.PROJECTILE_WIDTH,
+        height: ProjectileService.PROJECTILE_HEIGHT,
+        vy: -ProjectileService.PLAYER_PROJECTILE_SPEED,
+        isActive: true
+      });
+    }
   }
 
   /** Fire a new enemy projectile originating at (x, y). */
   addEnemyProjectile(x: number, y: number): void {
-    this.enemyProjectiles.push({
-      x,
-      y,
-      width: ProjectileService.PROJECTILE_WIDTH,
-      height: ProjectileService.PROJECTILE_HEIGHT,
-      vy: ProjectileService.ENEMY_PROJECTILE_SPEED,
-      isActive: true
-    });
+    if (this.freeEnemyProjectiles.length > 0) {
+      const p = this.freeEnemyProjectiles.pop()!;
+      p.x = x;
+      p.y = y;
+      p.width = ProjectileService.PROJECTILE_WIDTH;
+      p.height = ProjectileService.PROJECTILE_HEIGHT;
+      p.vy = ProjectileService.ENEMY_PROJECTILE_SPEED;
+      p.isActive = true;
+      this.enemyProjectiles.push(p);
+    } else {
+      this.enemyProjectiles.push({
+        x,
+        y,
+        width: ProjectileService.PROJECTILE_WIDTH,
+        height: ProjectileService.PROJECTILE_HEIGHT,
+        vy: ProjectileService.ENEMY_PROJECTILE_SPEED,
+        isActive: true
+      });
+    }
   }
 
   /**
@@ -75,7 +100,19 @@ export class ProjectileService {
       if (p.y > canvasHeight) p.isActive = false;
     }
 
-    // Prune inactive entries to avoid unbounded growth
+    // Collect newly deactivated projectiles into the free pool
+    for (const p of this.playerProjectiles) {
+      if (!p.isActive) {
+        this.freePlayerProjectiles.push(p);
+      }
+    }
+    for (const p of this.enemyProjectiles) {
+      if (!p.isActive) {
+        this.freeEnemyProjectiles.push(p);
+      }
+    }
+
+    // Prune inactive entries
     this.playerProjectiles = this.playerProjectiles.filter(p => p.isActive);
     this.enemyProjectiles = this.enemyProjectiles.filter(p => p.isActive);
   }
@@ -87,6 +124,14 @@ export class ProjectileService {
 
   /** Remove all projectiles (call on game reset or level start). */
   clear(): void {
+    for (const p of this.playerProjectiles) {
+      p.isActive = false;
+      this.freePlayerProjectiles.push(p);
+    }
+    for (const p of this.enemyProjectiles) {
+      p.isActive = false;
+      this.freeEnemyProjectiles.push(p);
+    }
     this.playerProjectiles = [];
     this.enemyProjectiles = [];
   }

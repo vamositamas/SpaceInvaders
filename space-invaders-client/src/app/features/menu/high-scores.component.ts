@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -41,13 +41,34 @@ import { HighScore } from '../../core/models/high-score.interface';
 export class HighScoresComponent implements OnInit, AfterViewInit {
   private readonly highScoreService = inject(HighScoreService);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   // Table configuration
   displayedColumns: string[] = ['rank', 'playerName', 'score', 'level', 'date'];
   dataSource = new MatTableDataSource<HighScore>([]);
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = paginator;
+      this.dataSource.paginator.pageSize = 10;
+      this.dataSource.paginator.pageSizeOptions = [5, 10, 25, 50];
+      this.cdr.markForCheck();
+    }
+  }
+
+  get paginator(): MatPaginator {
+    return this._paginator;
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this.dataSource.sort = sort;
+      this.cdr.markForCheck();
+    }
+  }
 
   // Component state
   highScores: HighScore[] = [];
@@ -60,17 +81,7 @@ export class HighScoresComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (this.paginator) {
-      // Configure paginator
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.paginator.pageSize = 10;
-      this.dataSource.paginator.pageSizeOptions = [5, 10, 25, 50];
-    }
-
-    // Configure sorting
-    if (this.sort) {
-      this.dataSource.sort = this.sort;
-    }
+    // Handled by dynamic ViewChild setters
   }
 
   /**
@@ -86,6 +97,7 @@ export class HighScoresComponent implements OnInit, AfterViewInit {
   loadHighScores(): void {
     this.isLoading = true;
     this.errorMessage = null;
+    this.cdr.markForCheck();
     this.highScoreService.loadHighScores(100);
   }
 
@@ -99,11 +111,13 @@ export class HighScoresComponent implements OnInit, AfterViewInit {
         this.dataSource.data = scores;
         this.isLoading = false;
         this.errorMessage = null;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading high scores:', error);
         this.errorMessage = 'Failed to load high scores. Please try again.';
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
