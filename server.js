@@ -14,8 +14,21 @@ const { swaggerUi, specs } = require('./src/utils/swagger.config');
 
 const app = express();
 const server = http.createServer(app);
+
+// Configure CORS for production and development
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : [
+      'http://localhost:4200',
+      'https://*.vercel.app',
+      'https://space-invaders-frontend.vercel.app' // Update with your actual frontend URL
+    ];
+
 const io = new Server(server, {
-  cors: { origin: process.env.ALLOWED_ORIGINS || '*' }
+  cors: { 
+    origin: allowedOrigins,
+    credentials: true 
+  }
 });
 
 const gameRoom = new GameRoom(io);
@@ -34,7 +47,8 @@ const apiLimiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS || '*'
+  origin: allowedOrigins,
+  credentials: true
 }));
 app.use(express.json());
 app.use('/api/', apiLimiter);
