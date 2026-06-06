@@ -16,19 +16,44 @@ const app = express();
 const server = http.createServer(app);
 
 // Configure CORS for production and development
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : [
+// Function to check if origin is allowed (supports wildcards)
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches allowed patterns
+    const allowedPatterns = [
       'http://localhost:4200',
       'https://space-invaders-pi-nine.vercel.app',
-      'https://*.vercel.app'
+      'https://space-invaders-backend.vercel.app'
     ];
+    
+    // Check exact matches
+    if (allowedPatterns.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Check if origin ends with .vercel.app (for preview deployments)
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Use environment variable if set
+    if (process.env.ALLOWED_ORIGINS) {
+      const envOrigins = process.env.ALLOWED_ORIGINS.split(',');
+      if (envOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+};
 
 const io = new Server(server, {
-  cors: { 
-    origin: allowedOrigins,
-    credentials: true 
-  }
+  cors: corsOptions
 });
 
 const gameRoom = new GameRoom(io);
@@ -46,10 +71,7 @@ const apiLimiter = rateLimit({
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/api/', apiLimiter);
 
