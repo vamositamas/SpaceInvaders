@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { EnemyEntity } from './enemy.service';
 
 const DESCENT_STEP = 20;           // pixels dropped each direction reversal
-const BASE_SPEED_PX_PER_SEC = 60;  // base speed (matches config baseSpeed=1 × 60)
+const BASE_SPEED_PX_PER_SEC = 60;  // fallback base speed if not provided
 const SPEED_INCREMENT = 2;         // extra px/s per destroyed enemy (reduced for playability)
+const SPEED_INCREMENT_MULTIPLIER = 0.05; // 5% speed increase per destroyed enemy
 
 /**
  * EnemyMovementService - Moves the enemy formation as a group
@@ -25,17 +26,19 @@ export class EnemyMovementService {
    * @param enemies      All enemy entities (active and inactive)
    * @param canvasWidth  Canvas width for edge detection
    * @param totalEnemies Original total enemy count (for speed scaling)
+   * @param baseSpeed    Level-adjusted base speed (px/s)
    */
   update(
     deltaTime: number,
     enemies: EnemyEntity[],
     canvasWidth: number,
-    totalEnemies: number
+    totalEnemies: number,
+    baseSpeed: number = BASE_SPEED_PX_PER_SEC
   ): void {
     const active = enemies.filter(e => e.isActive);
     if (active.length === 0) return;
 
-    const speed = this.computeSpeed(active.length, totalEnemies);
+    const speed = this.computeSpeed(active.length, totalEnemies, baseSpeed);
     const move = speed * (deltaTime / 1000) * this.direction;
 
     // Tentatively move all enemies
@@ -62,10 +65,12 @@ export class EnemyMovementService {
   /**
    * Calculate current speed based on remaining enemy count.
    * Fewer enemies → faster movement.
+   * Uses percentage-based scaling so higher levels accelerate proportionally.
    */
-  computeSpeed(activeCount: number, totalCount: number): number {
+  computeSpeed(activeCount: number, totalCount: number, baseSpeed: number): number {
     const destroyed = totalCount - activeCount;
-    return BASE_SPEED_PX_PER_SEC + destroyed * SPEED_INCREMENT;
+    const percentageBoost = destroyed * SPEED_INCREMENT_MULTIPLIER;
+    return baseSpeed * (1 + percentageBoost);
   }
 
   /** Reset direction to rightward (call on new game / new level). */

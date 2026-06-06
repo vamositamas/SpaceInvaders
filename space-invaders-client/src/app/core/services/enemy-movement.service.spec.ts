@@ -79,8 +79,9 @@ describe('EnemyMovementService', () => {
 
   it('should move faster when more enemies are destroyed', () => {
     const enemies = [makeEnemy(100, 100), makeEnemy(200, 100)];
-    const speedFull = service.computeSpeed(2, 2);    // all alive
-    const speedHalf = service.computeSpeed(1, 2);    // half destroyed
+    const baseSpeed = 60;
+    const speedFull = service.computeSpeed(2, 2, baseSpeed);    // all alive
+    const speedHalf = service.computeSpeed(1, 2, baseSpeed);    // half destroyed
     expect(speedHalf).toBeGreaterThan(speedFull);
   });
 

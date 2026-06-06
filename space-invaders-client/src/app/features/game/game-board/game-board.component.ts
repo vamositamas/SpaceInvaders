@@ -294,14 +294,17 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Update all active visual particles
     this.particleService.update(deltaTime);
 
-    // Update enemy formation movement
-    const activeEnemies = this.enemyService.getActiveEnemies();
-    this.enemyMovementService.update(deltaTime, activeEnemies, width, TOTAL_ENEMIES);
-
-    // Update enemy shooting
+    // Get level-adjusted configuration for this level
     const levelConfig = this.levelService.getLevelConfig(
       this.levelService.getCurrentLevel(), this.config
     );
+
+    // Update enemy formation movement with level-scaled base speed
+    const activeEnemies = this.enemyService.getActiveEnemies();
+    const enemyBaseSpeed = levelConfig.enemies.baseSpeed * 60; // config baseSpeed is multiplier, convert to px/s
+    this.enemyMovementService.update(deltaTime, activeEnemies, width, TOTAL_ENEMIES, enemyBaseSpeed);
+
+    // Update enemy shooting
     this.enemyShootingService.update(
       deltaTime,
       this.enemyService.getBottomEnemiesPerColumn(),
