@@ -20,8 +20,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
       'http://localhost:4200',
-      'https://*.vercel.app',
-      'https://space-invaders-frontend.vercel.app' // Update with your actual frontend URL
+      'https://space-invaders-pi-nine.vercel.app',
+      'https://*.vercel.app'
     ];
 
 const io = new Server(server, {
