@@ -45,6 +45,11 @@ export class InputHandlerService {
   /** Reference to the canvas element for coordinate calculations */
   private canvas: HTMLCanvasElement | null = null;
   
+  /** Mobile virtual button states */
+  private mobileLeftPressed: boolean = false;
+  private mobileRightPressed: boolean = false;
+  private mobileFirePressed: boolean = false;
+  
   /** Event listener references for cleanup */
   private keydownListener: ((e: KeyboardEvent) => void) | null = null;
   private keyupListener: ((e: KeyboardEvent) => void) | null = null;
@@ -124,12 +129,19 @@ export class InputHandlerService {
   /**
    * Check if a specific key is currently pressed.
    * Key names are case-insensitive.
+   * Also checks mobile virtual buttons for arrow keys and space.
    * 
    * @param key - The key to check (e.g., 'ArrowLeft', 'Space', 'w')
    * @returns True if the key is currently pressed, false otherwise
    */
   isKeyPressed(key: string): boolean {
     const normalizedKey = key.toLowerCase();
+    
+    // Check mobile virtual buttons
+    if (normalizedKey === 'arrowleft' && this.mobileLeftPressed) return true;
+    if (normalizedKey === 'arrowright' && this.mobileRightPressed) return true;
+    if (normalizedKey === ' ' && this.mobileFirePressed) return true;
+    
     return this.keysPressed.get(normalizedKey) === true;
   }
 
@@ -201,5 +213,29 @@ export class InputHandlerService {
    */
   private handleMouseUp(event: MouseEvent): void {
     this.mouseButtons.set(event.button, false);
+  }
+
+  /**
+   * Set mobile left button state.
+   * Called by mobile control buttons.
+   */
+  setMobileLeft(pressed: boolean): void {
+    this.mobileLeftPressed = pressed;
+  }
+
+  /**
+   * Set mobile right button state.
+   * Called by mobile control buttons.
+   */
+  setMobileRight(pressed: boolean): void {
+    this.mobileRightPressed = pressed;
+  }
+
+  /**
+   * Set mobile fire button state.
+   * Called by mobile control buttons.
+   */
+  setMobileFire(pressed: boolean): void {
+    this.mobileFirePressed = pressed;
   }
 }

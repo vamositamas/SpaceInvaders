@@ -623,4 +623,30 @@ export class GameBoardComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
+
+  // ─── Mobile Controls ─────────────────────────────────────────────────────
+
+  /**
+   * Handle mobile left button press/release.
+   * @param pressed - True when button is pressed, false when released
+   */
+  onMobileLeft(pressed: boolean): void {
+    this.inputHandlerService.setMobileLeft(pressed);
+  }
+
+  /**
+   * Handle mobile right button press/release.
+   * @param pressed - True when button is pressed, false when released
+   */
+  onMobileRight(pressed: boolean): void {
+    this.inputHandlerService.setMobileRight(pressed);
+  }
+
+  /**
+   * Handle mobile fire button press/release.
+   * @param pressed - True when button is pressed, false when released
+   */
+  onMobileFire(pressed: boolean): void {
+    this.inputHandlerService.setMobileFire(pressed);
+  }
 }

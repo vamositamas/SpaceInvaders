@@ -54,7 +54,14 @@ export class InstructionsDialogComponent {
           <li><strong>Left Click</strong> - Fire projectiles</li>
         </ul>
         
-        <p class="note">💡 You can switch between keyboard and mouse controls in the Settings menu.</p>
+        <h4>Mobile Controls</h4>
+        <ul>
+          <li><strong>On-screen buttons</strong> - Automatically appear on touch devices</li>
+          <li><strong>Left/Right arrows</strong> - Move your spaceship</li>
+          <li><strong>Fire button</strong> - Shoot projectiles</li>
+        </ul>
+        
+        <p class="note">💡 Controls automatically adapt to your device type.</p>
       `
     },
     {

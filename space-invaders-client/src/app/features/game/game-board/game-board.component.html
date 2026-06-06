@@ -1,3 +1,39 @@
 <div class="game-board-container">
   <canvas #gameCanvas class="game-canvas"></canvas>
+  
+  <!-- Mobile Controls - Only visible on touch devices -->
+  <div class="mobile-controls">
+    <button 
+      class="mobile-btn mobile-btn-left"
+      (touchstart)="onMobileLeft(true)"
+      (touchend)="onMobileLeft(false)"
+      (mousedown)="onMobileLeft(true)"
+      (mouseup)="onMobileLeft(false)"
+      (mouseleave)="onMobileLeft(false)"
+      aria-label="Move left">
+      ◀
+    </button>
+    
+    <button 
+      class="mobile-btn mobile-btn-fire"
+      (touchstart)="onMobileFire(true)"
+      (touchend)="onMobileFire(false)"
+      (mousedown)="onMobileFire(true)"
+      (mouseup)="onMobileFire(false)"
+      (mouseleave)="onMobileFire(false)"
+      aria-label="Fire">
+      🔥
+    </button>
+    
+    <button 
+      class="mobile-btn mobile-btn-right"
+      (touchstart)="onMobileRight(true)"
+      (touchend)="onMobileRight(false)"
+      (mousedown)="onMobileRight(true)"
+      (mouseup)="onMobileRight(false)"
+      (mouseleave)="onMobileRight(false)"
+      aria-label="Move right">
+      ▶
+    </button>
+  </div>
 </div>
