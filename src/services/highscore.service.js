@@ -9,7 +9,9 @@ const { validateHighScore } = require('../models/schemas');
 class HighScoreService {
   constructor() {
     this.fileStorage = new FileStorageService();
-    this.highScoresPath = path.join(__dirname, '../../data/highscores/highscores.json');
+    // Use /tmp on Vercel/serverless, local data directory otherwise
+    const dataDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../../data/highscores');
+    this.highScoresPath = path.join(dataDir, 'highscores.json');
     this.MAX_SCORES = 100;
   }
 

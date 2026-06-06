@@ -57,8 +57,11 @@ function isCompleteSettings(settings) {
 class SettingsService {
   constructor() {
     this.fileStorage = new FileStorageService();
-    this.settingsPath = path.join(__dirname, '../../data/settings/settings.json');
+    // Default settings is read-only, use local path
     this.defaultSettingsPath = path.join(__dirname, '../../data/settings/default-settings.json');
+    // User settings needs writable storage - use /tmp on Vercel
+    const dataDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../../data/settings');
+    this.settingsPath = path.join(dataDir, 'settings.json');
     this.currentSettings = null;
   }
 

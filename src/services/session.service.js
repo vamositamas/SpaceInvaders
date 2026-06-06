@@ -24,7 +24,9 @@ const MAX_SESSIONS = 100;
 class SessionService {
   constructor() {
     this.fileStorage = new FileStorageService();
-    this.sessionsPath = path.join(__dirname, '../../data/logs/game-sessions.json');
+    // Session logs need writable storage - use /tmp on Vercel
+    const dataDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../../data/logs');
+    this.sessionsPath = path.join(dataDir, 'game-sessions.json');
     // In-memory copy — loaded lazily on first access
     this._sessions = null;
   }

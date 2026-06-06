@@ -8,8 +8,11 @@ const { validateConfig } = require('../models/schemas');
 class ConfigService {
   constructor() {
     this.fileStorage = new FileStorageService();
-    this.configPath = path.join(__dirname, '../../data/config/game-config.json');
+    // Default config is read-only, use local path
     this.defaultConfigPath = path.join(__dirname, '../../data/config/default-config.json');
+    // User config needs writable storage - use /tmp on Vercel
+    const dataDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '../../data/config');
+    this.configPath = path.join(dataDir, 'game-config.json');
     this.currentConfig = null;
   }
 
